@@ -12,6 +12,18 @@ export const searchCommand: CommandModule = {
         .setRequired(true)
     ),
   async execute(interaction): Promise<void> {
-    await interaction.reply("CueBot received /search. Open/licensed provider search is coming in CueBot 0.2.");
+    const query = interaction.options.getString("query", true);
+    console.log(
+      [
+        "/search placeholder received:",
+        `query=${query}`,
+        `guild=${interaction.guildId ?? "dm"}`,
+        `user=${interaction.user.id}`
+      ].join(" ")
+    );
+
+    await interaction.reply(
+      `CueBot received /search for: ${query}. Open/licensed provider search is coming in CueBot 0.2.`
+    );
   }
 };
