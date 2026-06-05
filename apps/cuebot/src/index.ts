@@ -2,6 +2,7 @@ import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import { config } from "./config.js";
 import type { CommandModule } from "./commands/command.js";
 import { cuebotCommands } from "./commands/index.js";
+import { handleButtonInteraction } from "./interactions/button-handler.js";
 
 const commands = new Collection<string, CommandModule>();
 
@@ -44,6 +45,28 @@ client.once(Events.ClientReady, (readyClient) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+  if (interaction.isButton()) {
+    try {
+      await handleButtonInteraction(interaction);
+    } catch (error) {
+      console.error(`Error handling button interaction: ${getSafeErrorMessage(error)}`);
+
+      try {
+        const content = "CueBot hit an error handling that button.";
+
+        if (interaction.deferred) {
+          await interaction.followUp({ content, ephemeral: true });
+        } else if (!interaction.replied) {
+          await interaction.reply({ content, ephemeral: true });
+        }
+      } catch {
+        // Interaction may have already expired — nothing to do.
+      }
+    }
+
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) {
     return;
   }

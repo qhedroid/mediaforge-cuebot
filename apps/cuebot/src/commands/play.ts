@@ -228,12 +228,45 @@ export const playCommand: CommandModule = {
           return;
         }
 
-        if (!track.filePath) {
-          await interaction.editReply("That result does not have a local playable file path yet.");
+        if (!track.filePath && !track.pageUrl) {
+          await interaction.editReply("That result does not have a playable source.");
           return;
         }
 
-        const sourceFilePath = path.resolve(track.filePath);
+        if (!track.filePath && track.pageUrl) {
+          console.log(
+            `/play result url resolver started: providerTrackId=${track.id} providerId=${track.providerId} host=${getSafeUrlHost(track.pageUrl)}`
+          );
+          const queueItem = await prepareUrlInput(
+            { url: track.pageUrl },
+            { guildId, requestedByUserId: interaction.user.id }
+          );
+          queueItem.metadata.title = track.title;
+          if (track.artist) {
+            queueItem.metadata.artist = track.artist;
+          }
+          tempFilesToCleanOnError.push(queueItem.preparedFilePath ?? queueItem.metadata.preparedFilePath ?? "");
+          console.log(
+            `/play result url resolver completed: providerTrackId=${track.id} trackId=${queueItem.id} preparedFilePath=${queueItem.preparedFilePath ?? "missing"}`
+          );
+          const queueResult = await queuePlayableItem(guildId, member, queueItem);
+          tempFilesToCleanOnError.length = 0;
+
+          await interaction.editReply(
+            [
+              queueResult.status,
+              `Title: ${track.title}`,
+              `Artist: ${track.artist ?? "Unknown"}`,
+              `Track ID: ${queueItem.id}`,
+              `Queue position: ${queueResult.status === "Queued and playing" ? 0 : queueResult.queuePosition}`,
+              "Reminder: only use media you own or have permission to play.",
+              ...queueResult.playbackWarning
+            ].join("\n")
+          );
+          return;
+        }
+
+        const sourceFilePath = path.resolve(track.filePath ?? "");
 
         if (!existsSync(sourceFilePath)) {
           await interaction.editReply(`Local library file is missing for result ${resultId}.`);

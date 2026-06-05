@@ -2,11 +2,11 @@
 
 MediaForge + CueBot is a portfolio-safe local-first media preparation and Discord playback project.
 
-CueBot is a Discord music bot. CueBot 0.1 supports uploaded, user-provided media playback. CueBot 0.2 adds direct URL playback for legally permitted media. Future provider search remains focused on open/licensed sources.
+CueBot is a Discord music bot. It supports attachment playback, direct URL playback, YouTube URL playback, and YouTube search with button-based result selection. All media preparation lives in `packages/media-core`; CueBot owns Discord commands, voice sessions, queue management, and user-facing responses.
 
 MediaForge is a separate personal local media converter. It owns local media preparation workflows and reusable conversion logic through `packages/media-core`.
 
-This project is not described or designed as a YouTube downloader, piracy tool, or rights bypass system. URL playback is reserved for direct, legally permitted media sources.
+This project is not described or designed as a YouTube downloader, piracy tool, or rights bypass system. All playback is for legally permitted media only.
 
 ## Workspace
 
@@ -20,9 +20,11 @@ This project is not described or designed as a YouTube downloader, piracy tool, 
 
 ## Version Targets
 
-- CueBot 0.1: implemented uploaded attachment playback with queue controls.
-- CueBot 0.2: in progress direct permitted URL playback through `/play url:<url>`.
-- CueBot 1.0: planned open/licensed provider search and selectable playback.
+- CueBot 0.1: implemented — attachment playback with queue controls.
+- CueBot 0.2: implemented — direct permitted URL playback through `/play url:<url>`.
+- CueBot 0.3: implemented — YouTube URL resolver via yt-dlp through `media-core`.
+- CueBot 0.4: implemented — YouTube search via `/search` with Play buttons.
+- CueBot 1.0: planned — embeds, attribution display, polished UX.
 
 ## CueBot 0.1 Status
 
@@ -36,14 +38,23 @@ CueBot 0.1 can play uploaded Discord attachments from `/play attachment:<file>`.
 
 CueBot 0.2 adds direct URL playback for legally permitted media through `media-core`. Provider search is not the main 0.2 focus; the local library provider is dev-only/experimental.
 
-## CueBot 0.2 Direction
+## Commands
 
-CueBot 0.2 keeps URL ingestion and preparation in `packages/media-core`. CueBot only handles Discord command input, queueing, voice playback, and user-facing responses.
+| Command | Description |
+|---|---|
+| `/play attachment:<file>` | Upload and play a media file |
+| `/play url:<url>` | Play a direct media URL or YouTube URL |
+| `/search query:<text>` | Search YouTube, pick a result with Play buttons |
+| `/ytsearch query:<text>` | Alias for `/search` |
+| `/play result:<n>` | Text-based fallback for search results |
+| `/queue` | Show the current queue |
+| `/nowplaying` | Show the current track |
+| `/pause` | Pause playback |
+| `/resume` | Resume playback |
+| `/skip` | Skip the current track |
+| `/stop` | Stop playback and clear the queue |
 
-- `/play url:<url>` supports direct HTTP/HTTPS media files for legally permitted media.
-- FFmpeg and FFprobe are still required.
-- Temporary files are stored under `storage/cuebot-temp` and cleaned after playback or `/stop`.
-- YouTube extraction and `yt-dlp` are not implemented.
+Only use media you own or have permission to play.
 
 ## Development
 

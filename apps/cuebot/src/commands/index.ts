@@ -7,11 +7,13 @@ import { resumeCommand } from "./resume.js";
 import { searchCommand } from "./search.js";
 import { skipCommand } from "./skip.js";
 import { stopCommand } from "./stop.js";
+import { ytSearchCommand } from "./ytsearch.js";
 import type { CommandModule } from "./command.js";
 
 export const cuebotCommands: CommandModule[] = [
   pingCommand,
   playCommand,
+  ytSearchCommand,
   searchCommand,
   queueCommand,
   skipCommand,

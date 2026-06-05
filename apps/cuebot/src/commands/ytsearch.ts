@@ -2,10 +2,10 @@ import { SlashCommandBuilder } from "discord.js";
 import type { CommandModule } from "./command.js";
 import { executeYouTubeSearch } from "../search/youtube-search-handler.js";
 
-export const searchCommand: CommandModule = {
+export const ytSearchCommand: CommandModule = {
   data: new SlashCommandBuilder()
-    .setName("search")
-    .setDescription("Search YouTube for music to play.")
+    .setName("ytsearch")
+    .setDescription("Alias for /search — use /search query:<text> instead.")
     .addStringOption((option) =>
       option
         .setName("query")
@@ -14,6 +14,6 @@ export const searchCommand: CommandModule = {
     ),
   async execute(interaction): Promise<void> {
     const query = interaction.options.getString("query", true);
-    await executeYouTubeSearch(interaction, query, "/search");
+    await executeYouTubeSearch(interaction, query, "/ytsearch");
   }
 };

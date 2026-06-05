@@ -92,6 +92,9 @@ pnpm --filter @mediaforge/cuebot start
 /play attachment:<small mp3>
 /play url:<legally permitted direct media URL>
 /play url:<legally permitted YouTube URL>
+/search query:<search terms>
+[click Play 1 button]
+/play result:1
 /queue
 /nowplaying
 /pause
@@ -111,6 +114,8 @@ CueBot supports uploaded attachment playback through `/play attachment:<file>`. 
 **Resolver URLs** (YouTube and other yt-dlp-supported URLs): media-core runs yt-dlp to extract audio as MP3. Only use content you own or have legal permission to play.
 
 The maximum duration for URL playback is 15 minutes.
+
+`/search query:<text>` searches YouTube and returns up to 5 results with Play buttons. Click a button to queue the track. Results are cached per guild/user for 10 minutes. Join a voice channel before clicking. `/ytsearch` is an alias that works identically. `/play result:<n>` is a text-based fallback if you prefer typing.
 
 ## Troubleshooting
 
