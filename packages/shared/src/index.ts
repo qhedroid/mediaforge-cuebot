@@ -82,6 +82,7 @@ export interface ProviderTrack {
   title: string;
   artist?: string;
   durationMs?: number;
+  filePath?: string;
   streamUrl?: string;
   pageUrl?: string;
   license?: string;

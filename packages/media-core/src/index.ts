@@ -10,7 +10,9 @@ export { checkFfmpegAvailable, FfmpegError, FfmpegService } from "./ffmpeg.servi
 export { checkFfprobeAvailable, FfprobeError, FfprobeService, probeMedia } from "./ffprobe.service.js";
 export { MetadataService } from "./metadata.service.js";
 export { ProviderRegistry } from "./provider-registry.js";
-export { UrlIngestService } from "./url-ingest.service.js";
+export { prepareUrlInput, UrlIngestError, UrlIngestService } from "./url-ingest.service.js";
+export { ResolverRegistry } from "./url-resolvers/resolver-registry.js";
+export type { ResolvedMedia, UrlResolver } from "./url-resolvers/url-resolver.js";
 export { InternetArchiveProvider } from "./providers/internet-archive.provider.js";
 export { JamendoProvider } from "./providers/jamendo.provider.js";
 export { LocalLibraryProvider } from "./providers/local-library.provider.js";

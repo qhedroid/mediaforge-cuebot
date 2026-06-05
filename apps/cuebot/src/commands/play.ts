@@ -5,15 +5,26 @@ import {
   FfmpegError,
   FfprobeError,
   humanReadableFileSize,
-  prepareAttachmentInput
+  prepareAttachmentInput,
+  prepareUrlInput,
+  UrlIngestError
 } from "@mediaforge/media-core";
+import type { ProviderTrack, QueueItem } from "@mediaforge/shared";
+import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { SlashCommandBuilder, type GuildMember } from "discord.js";
 import type { CommandModule } from "./command.js";
+import { searchCache } from "../search/search-cache.js";
 import { voiceSessionManager } from "../voice/runtime.js";
 import { VoiceSessionError } from "../voice/voice-session.js";
 
 function getFriendlyErrorMessage(error: unknown): string {
   if (error instanceof AttachmentIngestError) {
+    return error.message;
+  }
+
+  if (error instanceof UrlIngestError) {
     return error.message;
   }
 
@@ -44,6 +55,65 @@ async function getGuildMember(interaction: Parameters<CommandModule["execute"]>[
   return interaction.guild.members.fetch(interaction.user.id);
 }
 
+async function queuePlayableItem(
+  guildId: string,
+  member: GuildMember,
+  queueItem: QueueItem
+): Promise<{
+  queuePosition: number;
+  status: "Queued and playing" | "Queued";
+  playbackWarning: string[];
+}> {
+  await voiceSessionManager.ensureSession(guildId, member);
+  console.log(`/play voice session ready: guild=${guildId} trackId=${queueItem.id}`);
+  console.log(`/play queue enqueue started: guild=${guildId} trackId=${queueItem.id}`);
+  const queuePosition = voiceSessionManager.enqueue(guildId, queueItem);
+  console.log(`/play queue enqueue completed: guild=${guildId} trackId=${queueItem.id} queuePosition=${queuePosition}`);
+  console.log(`/play playback start requested: guild=${guildId} trackId=${queueItem.id}`);
+  const playbackStart = voiceSessionManager.startIfIdle(guildId);
+  console.log(
+    `/play playback start completed: guild=${guildId} trackId=${queueItem.id} started=${playbackStart.started} reason=${playbackStart.reason ?? "none"}`
+  );
+  const currentTrack = voiceSessionManager.getCurrent(guildId);
+  const status = playbackStart.started || currentTrack?.id === queueItem.id ? "Queued and playing" : "Queued";
+  const playbackWarning =
+    !playbackStart.started && !currentTrack
+      ? [`Playback did not start: ${playbackStart.reason ?? "unknown reason"}`]
+      : [];
+
+  return { queuePosition, status, playbackWarning };
+}
+
+function createProviderQueueItem(
+  guildId: string,
+  userId: string,
+  track: ProviderTrack,
+  preparedFilePath: string
+): QueueItem {
+  const id = randomUUID();
+  const createdAt = new Date().toISOString();
+
+  return {
+    id,
+    guildId,
+    requestedByUserId: userId,
+    status: "ready",
+    preparedFilePath,
+    enqueuedAt: createdAt,
+    metadata: {
+      id,
+      title: track.title,
+      artist: track.artist,
+      durationMs: track.durationMs,
+      sourceType: "provider_track",
+      sourceUri: track.filePath,
+      preparedFilePath,
+      license: track.license,
+      createdAt
+    }
+  };
+}
+
 export const playCommand: CommandModule = {
   data: new SlashCommandBuilder()
     .setName("play")
@@ -53,24 +123,45 @@ export const playCommand: CommandModule = {
         .setName("attachment")
         .setDescription("Audio or video file to queue")
         .setRequired(false)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("url")
+        .setDescription("Legally permitted media URL to prepare and play")
+        .setRequired(false)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("result")
+        .setDescription("Dev-only result number from /search")
+        .setRequired(false)
     ),
   async execute(interaction): Promise<void> {
     const attachment = interaction.options.getAttachment("attachment");
+    const url = interaction.options.getString("url");
+    const resultId = interaction.options.getString("result");
 
-    if (!attachment) {
-      await interaction.reply("Please attach an audio/video file for CueBot 0.1.");
+    if (!attachment && !url && !resultId) {
+      await interaction.reply("Please attach an audio/video file, use /play url:<url>, or use /play result:<id> after /search.");
       return;
     }
 
     await interaction.deferReply({ ephemeral: false });
-    console.log(
-      [
-        "/play attachment received:",
-        `filename=${attachment.name}`,
-        `size=${attachment.size}`,
-        `contentType=${attachment.contentType ?? "unknown"}`
-      ].join(" ")
-    );
+
+    if (attachment) {
+      console.log(
+        [
+          "/play attachment received:",
+          `filename=${attachment.name}`,
+          `size=${attachment.size}`,
+          `contentType=${attachment.contentType ?? "unknown"}`
+        ].join(" ")
+      );
+    } else if (url) {
+      console.log(`/play url received: guild=${interaction.guildId ?? "dm"} user=${interaction.user.id}`);
+    } else {
+      console.log(`/play result received: result=${resultId ?? "missing"} guild=${interaction.guildId ?? "dm"} user=${interaction.user.id}`);
+    }
 
     const tempFilesToCleanOnError: string[] = [];
 
@@ -87,6 +178,104 @@ export const playCommand: CommandModule = {
 
       if (!member.voice.channel) {
         await interaction.editReply("Please join a voice channel before using /play.");
+        return;
+      }
+
+      if (!attachment && url) {
+        console.log(`/play url ingestion started: guild=${guildId}`);
+        const queueItem = await prepareUrlInput(
+          { url },
+          {
+            guildId,
+            requestedByUserId: interaction.user.id
+          }
+        );
+        tempFilesToCleanOnError.push(queueItem.preparedFilePath ?? queueItem.metadata.preparedFilePath ?? "");
+        console.log(
+          `/play url ingestion completed: trackId=${queueItem.id} preparedFilePath=${queueItem.preparedFilePath ?? "missing"} durationMs=${queueItem.metadata.durationMs ?? "unknown"}`
+        );
+        const queueResult = await queuePlayableItem(guildId, member, queueItem);
+        tempFilesToCleanOnError.length = 0;
+
+        await interaction.editReply(
+          [
+            queueResult.status,
+            `Title: ${queueItem.metadata.title}`,
+            `Source: ${queueItem.metadata.sourceUri}`,
+            `Track ID: ${queueItem.id}`,
+            `Queue position: ${queueResult.status === "Queued and playing" ? 0 : queueResult.queuePosition}`,
+            "Reminder: only use media you own or have permission to play.",
+            ...queueResult.playbackWarning
+          ].join("\n")
+        );
+        return;
+      }
+
+      if (!attachment && resultId) {
+        const track = searchCache.get(guildId, interaction.user.id, resultId);
+
+        if (!track) {
+          await interaction.editReply("That search result expired or was not found. Run /search again.");
+          return;
+        }
+
+        if (!track.filePath) {
+          await interaction.editReply("That result does not have a local playable file path yet.");
+          return;
+        }
+
+        const sourceFilePath = path.resolve(track.filePath);
+
+        if (!existsSync(sourceFilePath)) {
+          await interaction.editReply(`Local library file is missing for result ${resultId}.`);
+          return;
+        }
+
+        console.log(`/play result ffprobe started: providerTrackId=${track.id} path=${sourceFilePath}`);
+        const playableAudio = await ensureDiscordPlayableAudio(sourceFilePath);
+        console.log(
+          `/play result ffprobe completed: providerTrackId=${track.id} durationMs=${playableAudio.metadata.durationMs ?? "unknown"} codec=${playableAudio.metadata.codecName ?? "unknown"}`
+        );
+
+        if (playableAudio.converted) {
+          tempFilesToCleanOnError.push(playableAudio.preparedFilePath);
+        }
+
+        const queueItem = createProviderQueueItem(
+          guildId,
+          interaction.user.id,
+          {
+            ...track,
+            durationMs: playableAudio.metadata.durationMs ?? track.durationMs
+          },
+          playableAudio.preparedFilePath
+        );
+        const queueResult = await queuePlayableItem(guildId, member, queueItem);
+        tempFilesToCleanOnError.length = 0;
+
+        await interaction.editReply(
+          [
+            queueResult.status,
+            `Title: ${track.title}`,
+            `Artist: ${track.artist ?? "Unknown Artist"}`,
+            `Track ID: ${queueItem.id}`,
+            `Queue position: ${queueResult.status === "Queued and playing" ? 0 : queueResult.queuePosition}`,
+            ...queueResult.playbackWarning
+          ].join("\n")
+        );
+        return;
+      }
+
+      if (attachment && resultId) {
+        console.log("/play received both attachment and result; using attachment.");
+      }
+
+      if (attachment && url) {
+        console.log("/play received both attachment and url; using attachment.");
+      }
+
+      if (!attachment) {
+        await interaction.editReply("Please attach an audio/video file, use /play url:<url>, or use /play result:<id> after /search.");
         return;
       }
 
@@ -138,32 +327,18 @@ export const playCommand: CommandModule = {
       queueItem.preparedFilePath = playableAudio.preparedFilePath;
       queueItem.metadata.preparedFilePath = playableAudio.preparedFilePath;
       queueItem.metadata.durationMs = playableAudio.metadata.durationMs;
-      await voiceSessionManager.ensureSession(guildId, member);
-      console.log(`/play voice session ready: guild=${guildId} trackId=${queueItem.id}`);
-      console.log(`/play queue enqueue started: guild=${guildId} trackId=${queueItem.id}`);
-      const queuePosition = voiceSessionManager.enqueue(guildId, queueItem);
-      console.log(`/play queue enqueue completed: guild=${guildId} trackId=${queueItem.id} queuePosition=${queuePosition}`);
+      const queueResult = await queuePlayableItem(guildId, member, queueItem);
       tempFilesToCleanOnError.length = 0;
-      console.log(`/play playback start requested: guild=${guildId} trackId=${queueItem.id}`);
-      const playbackStart = voiceSessionManager.startIfIdle(guildId);
-      console.log(
-        `/play playback start completed: guild=${guildId} trackId=${queueItem.id} started=${playbackStart.started} reason=${playbackStart.reason ?? "none"}`
-      );
-      const currentTrack = voiceSessionManager.getCurrent(guildId);
-      const status = playbackStart.started || currentTrack?.id === queueItem.id ? "Queued and playing" : "Queued";
-      const playbackWarning =
-        !playbackStart.started && !currentTrack
-          ? [`Playback did not start: ${playbackStart.reason ?? "unknown reason"}`]
-          : [];
 
       await interaction.editReply(
         [
-          status,
+          queueResult.status,
           `Filename: ${queueItem.metadata.originalFileName ?? attachment.name}`,
           `File size: ${humanReadableFileSize(queueItem.metadata.sizeBytes ?? attachment.size)}`,
           `Track ID: ${queueItem.id}`,
-          `Queue position: ${status === "Queued and playing" ? 0 : queuePosition}`,
-          ...playbackWarning
+          `Queue position: ${queueResult.status === "Queued and playing" ? 0 : queueResult.queuePosition}`,
+          ...(resultId || url ? ["Attachment provided too, so CueBot used the attachment."] : []),
+          ...queueResult.playbackWarning
         ].join("\n")
       );
     } catch (error) {

@@ -64,6 +64,7 @@ Test commands:
 ```text
 /ping
 /play attachment:<small mp3>
+/play url:<legally permitted direct media URL>
 /queue
 /nowplaying
 /pause
@@ -75,6 +76,8 @@ Test commands:
 Try `/ping` first. It should reply visibly with `Pong! CueBot is online.`
 
 CueBot 0.1 supports uploaded attachment playback through `/play attachment:<file>`. Join a voice channel before running the command. CueBot validates and stores supported media files in `storage/cuebot-temp`, probes/converts with FFmpeg when needed, joins the requester's voice channel, plays the queued track, and cleans up temporary files.
+
+CueBot 0.2 adds `/play url:<url>` for legally permitted direct media URLs. The user must join a voice channel first. Temporary URL files are stored in `storage/cuebot-temp` and cleaned after playback or `/stop`.
 
 ## Troubleshooting
 
