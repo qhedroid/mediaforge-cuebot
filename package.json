@@ -1,0 +1,24 @@
+{
+  "name": "mediaforge-cuebot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portfolio-safe local-first media preparation and Discord playback monorepo.",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "pnpm -r exec tsc -b --clean",
+    "dev:cuebot": "pnpm --filter @mediaforge/cuebot dev",
+    "dev:mediaforge": "pnpm --filter @mediaforge/mediaforge-cli dev",
+    "media:test": "node scripts/test-local-media.mjs",
+    "secret:check": "node scripts/secret-check.mjs",
+    "typecheck": "tsc -b --pretty"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "typescript": "^5.8.3"
+  }
+}

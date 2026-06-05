@@ -1,0 +1,24 @@
+{
+  "name": "@mediaforge/cuebot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "dev": "tsc -b -w",
+    "register": "node dist/register-commands.js",
+    "setup:check": "node dist/setup-check.js",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.19.0",
+    "@mediaforge/media-core": "workspace:*",
+    "@mediaforge/shared": "workspace:*",
+    "discord.js": "^14.19.3",
+    "dotenv": "^16.5.0",
+    "opusscript": "^0.0.8"
+  }
+}

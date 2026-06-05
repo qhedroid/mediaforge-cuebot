@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/media-core" },
+    { "path": "./apps/mediaforge-cli" },
+    { "path": "./apps/cuebot" }
+  ]
+}
