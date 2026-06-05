@@ -2,7 +2,7 @@
   "name": "mediaforge-cuebot",
   "version": "0.1.0",
   "private": true,
-  "description": "Portfolio-safe local-first media preparation and Discord playback monorepo.",
+  "description": "CueBot Discord media playback bot with MediaForge media-core preparation.",
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=22.12.0",
