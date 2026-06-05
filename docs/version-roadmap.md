@@ -1,6 +1,6 @@
 # Version Roadmap
 
-## CueBot 0.1
+## CueBot 0.1 - Implemented
 
 Goal: uploaded Discord file playback with basic queue controls.
 
@@ -17,7 +17,14 @@ Responsibilities:
 - `media-core` handles attachment ingest, probing, conversion, metadata, and cleanup.
 - CueBot owns Discord interactions, voice sessions, queue state, playback controls, and embeds.
 
-## CueBot 0.2
+Status:
+
+- Implemented in commit `ed470ba`.
+- Supports uploaded Discord attachments through `/play attachment:<file>`.
+- MP3 plays directly; WAV, M4A, OGG, WEBM, and MP4 are prepared through FFmpeg.
+- Includes `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
+
+## CueBot 0.2 - Planned
 
 Goal: open or licensed music provider search.
 
@@ -35,7 +42,7 @@ Responsibilities:
 - Provider results must expose license and attribution metadata when available.
 - CueBot queues selected result IDs without implementing provider-specific logic directly.
 
-## CueBot 1.0
+## CueBot 1.0 - Planned
 
 Goal: uploaded playback, open/licensed provider search, and MediaForge URL playback for legally permitted media.
 

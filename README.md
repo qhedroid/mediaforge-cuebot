@@ -2,7 +2,7 @@
 
 MediaForge + CueBot is a portfolio-safe local-first media preparation and Discord playback project.
 
-CueBot is a Discord music bot. Its first release supports uploaded, user-provided media. CueBot 0.2 adds search across open or licensed music providers. CueBot 1.0 adds MediaForge URL playback for legally permitted media.
+CueBot is a Discord music bot. CueBot 0.1 supports uploaded, user-provided media playback. CueBot 0.2 adds search across open or licensed music providers. CueBot 1.0 adds MediaForge URL playback for legally permitted media.
 
 MediaForge is a separate personal local media converter. It owns local media preparation workflows and reusable conversion logic through `packages/media-core`.
 
@@ -20,9 +20,21 @@ This project is not described or designed as a YouTube downloader, piracy tool, 
 
 ## Version Targets
 
-- CueBot 0.1: `/play attachment:<file>`
-- CueBot 0.2: `/search query:<text>` and `/play result:<result_id>`
-- CueBot 1.0: `/play url:<supported_url>` and `/play query:<search_terms>`
+- CueBot 0.1: implemented uploaded attachment playback with queue controls.
+- CueBot 0.2: planned `/search query:<text>` and `/play result:<result_id>`.
+- CueBot 1.0: planned `/play url:<supported_url>` and `/play query:<search_terms>`.
+
+## CueBot 0.1 Status
+
+CueBot 0.1 can play uploaded Discord attachments from `/play attachment:<file>`.
+
+- MP3 files are used directly for playback.
+- WAV, M4A, OGG, WEBM, and MP4 files are prepared through FFmpeg.
+- Queue controls are available through `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
+- FFmpeg and FFprobe are required for validation and preparation.
+- CueBot stores temporary playback files in `storage/cuebot-temp` and cleans them up after playback or `/stop`.
+
+CueBot 0.2 will add open/licensed provider search. CueBot 1.0 will add MediaForge URL playback for legally permitted media.
 
 ## Development
 
@@ -50,7 +62,8 @@ Local Discord setup:
 
 - [Local environment guide](docs/local-env.md)
 - [Discord test server setup](docs/discord-test-server-setup.md)
+- [CueBot 0.1 test checklist](docs/cuebot-0.1-test-checklist.md)
 
 ## Current Scope
 
-This scaffold intentionally does not implement Discord playback, provider APIs, YouTube support, URL downloading, or production conversion logic. It only establishes the monorepo structure, TypeScript build wiring, placeholder command modules, placeholder media services, shared types, and documentation.
+CueBot 0.1 implements uploaded attachment playback only. Provider APIs, YouTube support, MediaForge URL playback, and MediaForge CLI conversion features are not implemented.
