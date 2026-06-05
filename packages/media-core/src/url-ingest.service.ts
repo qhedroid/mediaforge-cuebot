@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ensureDiscordPlayableAudio } from "./conversion.service.js";
+import { downloadViaYtDlp, YtDlpError } from "./ytdlp.service.js";
 
 const allowedExtensions = new Set([".mp3", ".wav", ".m4a", ".ogg", ".webm", ".mp4"]);
 const allowedContentTypes = new Set([
@@ -28,6 +29,7 @@ const maxDownloadAttempts = 2;
 export type UrlIngestErrorCode =
   | "invalid_url"
   | "unsupported_url"
+  | "ytdlp_missing"
   | "download_timeout"
   | "duration_too_long"
   | "download_failed"
@@ -76,7 +78,7 @@ function parseHttpUrl(url: string): URL {
   try {
     parsedUrl = new URL(url);
   } catch {
-    throw new UrlIngestError("invalid_url", "Please provide a valid http or https media URL.");
+    throw new UrlIngestError("invalid_url", "Please provide a valid http or https URL.");
   }
 
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
@@ -116,6 +118,10 @@ function getExtensionFromContentType(contentType: string | null): string {
   }
 }
 
+function isDirectMediaUrl(url: URL): boolean {
+  return allowedExtensions.has(getExtensionFromUrl(url));
+}
+
 function validateMediaType(url: URL, contentType: string | null): string {
   const extension = getExtensionFromUrl(url);
   const normalizedContentType = contentType?.split(";")[0]?.trim().toLowerCase();
@@ -127,7 +133,7 @@ function validateMediaType(url: URL, contentType: string | null): string {
   ) {
     throw new UrlIngestError(
       "unsupported_url",
-      "CueBot only supports direct permitted media file URLs right now. Resolver URLs such as YouTube are planned for a future MediaForge URL provider."
+      "CueBot only supports direct permitted media file URLs or resolver URLs (e.g. YouTube via yt-dlp)."
     );
   }
 
@@ -226,6 +232,23 @@ function classifyDownloadError(error: unknown): UrlIngestError {
   );
 }
 
+function mapYtDlpError(error: YtDlpError): UrlIngestError {
+  switch (error.code) {
+    case "ytdlp_missing":
+      return new UrlIngestError("ytdlp_missing", error.message);
+    case "duration_too_long":
+      return new UrlIngestError("duration_too_long", "This media is too long for the current MVP limit.");
+    case "download_failed":
+    case "metadata_failed":
+      return new UrlIngestError(
+        "download_failed",
+        "CueBot could not prepare that URL. Check the URL is supported and legally permitted."
+      );
+    default:
+      return new UrlIngestError("download_failed", "CueBot could not prepare that URL. Check the URL is supported and legally permitted.");
+  }
+}
+
 async function readResponseWithProgress(
   response: Response,
   hostname: string,
@@ -278,18 +301,17 @@ function formatDownloadProgress(
   return `URL ingest download progress: host=${hostname} downloadedBytes=${downloadedBytes}`;
 }
 
-export async function prepareUrlInput(input: UrlInput, options: PrepareOptions = {}): Promise<QueueItem> {
-  const parsedUrl = parseHttpUrl(input.url.trim());
-  const id = randomUUID();
-  const outputDirectory = resolveOutputDirectory(options.outputDirectory);
-  await mkdir(outputDirectory, { recursive: true });
-
+async function prepareDirectUrl(
+  parsedUrl: URL,
+  id: string,
+  outputDirectory: string
+): Promise<{ filePath: string; title: string }> {
   const initialOutputPath = path.join(outputDirectory, `${id}.download`);
-  let downloadedFilePath = initialOutputPath;
 
   try {
     const download = await downloadDirectMedia(parsedUrl, initialOutputPath);
-    downloadedFilePath = download.filePath;
+    const title = decodeURIComponent(path.basename(parsedUrl.pathname)) || parsedUrl.hostname;
+    return { filePath: download.filePath, title };
   } catch (error) {
     if (error instanceof UrlIngestError) {
       throw error;
@@ -297,6 +319,60 @@ export async function prepareUrlInput(input: UrlInput, options: PrepareOptions =
 
     const message = error instanceof Error ? error.message : String(error);
     throw new UrlIngestError("download_failed", `Direct URL download failed: ${message}`);
+  }
+}
+
+async function prepareResolverUrl(
+  parsedUrl: URL,
+  id: string,
+  outputDirectory: string
+): Promise<{ filePath: string; title: string; durationMs: number | undefined }> {
+  console.log(`URL ingest resolver path started: host=${parsedUrl.hostname}`);
+
+  try {
+    const result = await downloadViaYtDlp(parsedUrl.href, outputDirectory, id);
+    const durationMs = typeof result.durationSeconds === "number"
+      ? Math.round(result.durationSeconds * 1000)
+      : undefined;
+
+    return { filePath: result.filePath, title: result.title, durationMs };
+  } catch (error) {
+    if (error instanceof YtDlpError) {
+      throw mapYtDlpError(error);
+    }
+
+    throw new UrlIngestError(
+      "download_failed",
+      "CueBot could not prepare that URL. Check the URL is supported and legally permitted."
+    );
+  }
+}
+
+export async function prepareUrlInput(input: UrlInput, options: PrepareOptions = {}): Promise<QueueItem> {
+  const parsedUrl = parseHttpUrl(input.url.trim());
+  const id = randomUUID();
+  const outputDirectory = resolveOutputDirectory(options.outputDirectory);
+  await mkdir(outputDirectory, { recursive: true });
+
+  const isDirect = isDirectMediaUrl(parsedUrl);
+  let downloadedFilePath: string;
+  let title: string;
+  let resolvedDurationMs: number | undefined;
+
+  if (isDirect) {
+    const result = await prepareDirectUrl(parsedUrl, id, outputDirectory);
+    downloadedFilePath = result.filePath;
+    title = result.title;
+  } else {
+    const result = await prepareResolverUrl(parsedUrl, id, outputDirectory);
+    downloadedFilePath = result.filePath;
+    title = result.title;
+    resolvedDurationMs = result.durationMs;
+
+    if (typeof resolvedDurationMs === "number" && resolvedDurationMs > maxDurationMs) {
+      await deleteTempFileIfExists(downloadedFilePath);
+      throw new UrlIngestError("duration_too_long", "This media is too long for the current MVP limit.");
+    }
   }
 
   let playableAudio;
@@ -310,7 +386,7 @@ export async function prepareUrlInput(input: UrlInput, options: PrepareOptions =
     throw new UrlIngestError(
       code,
       code === "probe_failed"
-        ? "FFprobe could not inspect the downloaded media."
+        ? "FFprobe could not inspect the prepared media."
         : "FFmpeg could not prepare this media for playback."
     );
   }
@@ -319,14 +395,18 @@ export async function prepareUrlInput(input: UrlInput, options: PrepareOptions =
     await deleteTempFileIfExists(downloadedFilePath);
   }
 
-  if (typeof playableAudio.metadata.durationMs === "number" && playableAudio.metadata.durationMs > maxDurationMs) {
-    await deleteTempFileIfExists(playableAudio.preparedFilePath);
-    throw new UrlIngestError("duration_too_long", "This media is too long for the current MVP limit.");
+  if (isDirect) {
+    if (typeof playableAudio.metadata.durationMs === "number" && playableAudio.metadata.durationMs > maxDurationMs) {
+      await deleteTempFileIfExists(playableAudio.preparedFilePath);
+      throw new UrlIngestError("duration_too_long", "This media is too long for the current MVP limit.");
+    }
   }
 
   const createdAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + tempFileLifetimeMs).toISOString();
-  const title = decodeURIComponent(path.basename(parsedUrl.pathname)) || parsedUrl.hostname;
+  const finalDurationMs = playableAudio.metadata.durationMs ?? resolvedDurationMs;
+
+  console.log(`URL ingest ffprobe completed: host=${parsedUrl.hostname} durationMs=${finalDurationMs ?? "unknown"} preparedFilePath=${playableAudio.preparedFilePath}`);
 
   return {
     id,
@@ -338,7 +418,7 @@ export async function prepareUrlInput(input: UrlInput, options: PrepareOptions =
     metadata: {
       id,
       title,
-      durationMs: playableAudio.metadata.durationMs,
+      durationMs: finalDurationMs,
       sourceType: "mediaforge_url",
       sourceUri: parsedUrl.toString(),
       preparedFilePath: playableAudio.preparedFilePath,

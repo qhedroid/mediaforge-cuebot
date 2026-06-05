@@ -38,33 +38,60 @@ For CueBot 0.1 testing, the bot needs these server/channel permissions:
 - Connect
 - Speak
 
-CueBot 0.1 playback requires FFmpeg and FFprobe. Install FFmpeg and make sure both commands are available on `PATH`:
+## Install FFmpeg
+
+CueBot requires FFmpeg and FFprobe. Install FFmpeg and make sure both commands are available on `PATH`:
 
 ```powershell
 ffmpeg -version
 ffprobe -version
 ```
 
+Or set `FFMPEG_PATH` and `FFPROBE_PATH` in your root `.env` if the executables are not on `PATH`.
+
 CueBot also includes `opusscript` as a small fallback Opus encoder for `@discordjs/voice`. FFmpeg with libopus is still preferred when available.
 
-Then register slash commands to the development server:
+## Install yt-dlp
+
+Resolver URL playback (including YouTube) requires yt-dlp. Install it and make sure it is available on `PATH`:
+
+```powershell
+yt-dlp --version
+```
+
+Or set `YTDLP_PATH` in your root `.env` if yt-dlp is not on `PATH`:
+
+```text
+YTDLP_PATH=C:\path\to\yt-dlp.exe
+```
+
+Install docs: https://github.com/yt-dlp/yt-dlp#installation
+
+Verify yt-dlp is available:
+
+```powershell
+pnpm ytdlp:check
+```
+
+## Register slash commands
 
 ```powershell
 pnpm --filter @mediaforge/cuebot register
 ```
 
-Start CueBot:
+## Start CueBot
 
 ```powershell
 pnpm --filter @mediaforge/cuebot start
 ```
 
-Test commands:
+## Test commands
 
 ```text
 /ping
 /play attachment:<small mp3>
 /play url:<legally permitted direct media URL>
+/play url:<legally permitted YouTube URL>
 /queue
 /nowplaying
 /pause
@@ -75,9 +102,15 @@ Test commands:
 
 Try `/ping` first. It should reply visibly with `Pong! CueBot is online.`
 
-CueBot 0.1 supports uploaded attachment playback through `/play attachment:<file>`. Join a voice channel before running the command. CueBot validates and stores supported media files in `storage/cuebot-temp`, probes/converts with FFmpeg when needed, joins the requester's voice channel, plays the queued track, and cleans up temporary files.
+CueBot supports uploaded attachment playback through `/play attachment:<file>`. Join a voice channel before running the command. CueBot validates and stores supported media files in `storage/cuebot-temp`, probes/converts with FFmpeg when needed, joins the requester's voice channel, plays the queued track, and cleans up temporary files.
 
-CueBot 0.2 adds `/play url:<url>` for legally permitted direct media URLs. The user must join a voice channel first. Temporary URL files are stored in `storage/cuebot-temp` and cleaned after playback or `/stop`.
+`/play url:<url>` supports two URL types:
+
+**Direct media URLs** (MP3, WAV, M4A, OGG, WEBM, MP4): downloaded directly. Example: a public-domain MP3 from a file host.
+
+**Resolver URLs** (YouTube and other yt-dlp-supported URLs): media-core runs yt-dlp to extract audio as MP3. Only use content you own or have legal permission to play.
+
+The maximum duration for URL playback is 15 minutes.
 
 ## Troubleshooting
 
@@ -99,12 +132,18 @@ To test a local media file without Discord upload/download, run:
 pnpm media:test "C:\path\to\file.mp3"
 ```
 
-Some sample MP3 sites block direct downloads or hotlinking. Test a direct URL before using it in Discord:
+To verify a direct URL before using it in Discord:
 
 ```powershell
 pnpm url:test "<url>"
 ```
 
-If `url:test` fails, try another direct MP3/OGG/WAV/M4A/WEBM/MP4 URL. YouTube URLs intentionally do not work yet.
+To verify yt-dlp is installed and reachable:
 
-External provider search, resolver URL playback, MediaForge CLI features, and YouTube support are not implemented.
+```powershell
+pnpm ytdlp:check
+```
+
+If `/play url:<YouTube URL>` fails with "yt-dlp could not be found", install yt-dlp and run `pnpm ytdlp:check` to confirm it is available.
+
+External provider search and MediaForge CLI features are not implemented.
