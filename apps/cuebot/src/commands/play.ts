@@ -47,6 +47,14 @@ function getFriendlyErrorMessage(error: unknown): string {
   return "CueBot could not queue that attachment for an unknown reason.";
 }
 
+function getSafeUrlHost(rawUrl: string): string {
+  try {
+    return new URL(rawUrl).hostname;
+  } catch {
+    return "invalid-url";
+  }
+}
+
 async function getGuildMember(interaction: Parameters<CommandModule["execute"]>[0]): Promise<GuildMember> {
   if (!interaction.guild) {
     throw new Error("Please use /play inside a Discord server.");
@@ -158,7 +166,7 @@ export const playCommand: CommandModule = {
         ].join(" ")
       );
     } else if (url) {
-      console.log(`/play url received: guild=${interaction.guildId ?? "dm"} user=${interaction.user.id}`);
+      console.log(`/play url received: guild=${interaction.guildId ?? "dm"} user=${interaction.user.id} host=${getSafeUrlHost(url)}`);
     } else {
       console.log(`/play result received: result=${resultId ?? "missing"} guild=${interaction.guildId ?? "dm"} user=${interaction.user.id}`);
     }
@@ -182,7 +190,7 @@ export const playCommand: CommandModule = {
       }
 
       if (!attachment && url) {
-        console.log(`/play url ingestion started: guild=${guildId}`);
+        console.log(`/play direct URL preparation started: guild=${guildId} host=${getSafeUrlHost(url)}`);
         const queueItem = await prepareUrlInput(
           { url },
           {
@@ -192,8 +200,9 @@ export const playCommand: CommandModule = {
         );
         tempFilesToCleanOnError.push(queueItem.preparedFilePath ?? queueItem.metadata.preparedFilePath ?? "");
         console.log(
-          `/play url ingestion completed: trackId=${queueItem.id} preparedFilePath=${queueItem.preparedFilePath ?? "missing"} durationMs=${queueItem.metadata.durationMs ?? "unknown"}`
+          `/play direct URL preparation completed: guild=${guildId} host=${getSafeUrlHost(url)} trackId=${queueItem.id} preparedFilePath=${queueItem.preparedFilePath ?? "missing"} durationMs=${queueItem.metadata.durationMs ?? "unknown"}`
         );
+        console.log(`/play playback start requested for direct URL: guild=${guildId} trackId=${queueItem.id}`);
         const queueResult = await queuePlayableItem(guildId, member, queueItem);
         tempFilesToCleanOnError.length = 0;
 
@@ -350,7 +359,12 @@ export const playCommand: CommandModule = {
           })
         )
       );
-      await interaction.editReply(getFriendlyErrorMessage(error));
+      try {
+        await interaction.editReply(getFriendlyErrorMessage(error));
+      } catch (replyError) {
+        const message = replyError instanceof Error ? replyError.message : String(replyError);
+        console.error(`Failed to send /play error response: ${message}`);
+      }
     }
   }
 };

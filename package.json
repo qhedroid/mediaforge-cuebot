@@ -15,7 +15,8 @@
     "dev:mediaforge": "pnpm --filter @mediaforge/mediaforge-cli dev",
     "media:test": "node scripts/test-local-media.mjs",
     "secret:check": "node scripts/secret-check.mjs",
-    "typecheck": "tsc -b --pretty"
+    "typecheck": "tsc -b --pretty",
+    "url:test": "node scripts/test-direct-url.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

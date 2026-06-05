@@ -99,4 +99,12 @@ To test a local media file without Discord upload/download, run:
 pnpm media:test "C:\path\to\file.mp3"
 ```
 
-Provider search, MediaForge URL playback, MediaForge CLI features, and YouTube support are not implemented.
+Some sample MP3 sites block direct downloads or hotlinking. Test a direct URL before using it in Discord:
+
+```powershell
+pnpm url:test "<url>"
+```
+
+If `url:test` fails, try another direct MP3/OGG/WAV/M4A/WEBM/MP4 URL. YouTube URLs intentionally do not work yet.
+
+External provider search, resolver URL playback, MediaForge CLI features, and YouTube support are not implemented.
