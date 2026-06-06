@@ -38,7 +38,8 @@ export async function executeYouTubeSearch(
     [
       `${commandLabel} search started:`,
       `guild=${guildId}`,
-      `user=${interaction.user.id}`
+      `user=${interaction.user.id}`,
+      `query=${query}`
     ].join(" ")
   );
 
@@ -59,7 +60,7 @@ export async function executeYouTubeSearch(
     return;
   }
 
-  const cachedResults = searchCache.store(guildId, interaction.user.id, tracks);
+  const cachedResults = searchCache.store(guildId, interaction.user.id, tracks.slice(0, 5));
 
   console.log(
     `${commandLabel} search completed: guild=${guildId} results=${cachedResults.length}`

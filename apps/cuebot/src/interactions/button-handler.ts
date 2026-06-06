@@ -40,44 +40,44 @@ export async function handleButtonInteraction(interaction: ButtonInteraction): P
     return;
   }
 
-  await interaction.deferUpdate();
+  await interaction.deferReply({ ephemeral: false });
 
   const guildId = interaction.guildId;
 
   if (!guildId || !interaction.guild) {
-    await interaction.followUp({
-      content: "Please use CueBot inside a Discord server.",
-      ephemeral: true
-    });
+    await interaction.editReply("Please use CueBot inside a Discord server.");
     return;
   }
 
   const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
 
   if (!member?.voice.channel) {
-    await interaction.followUp({
-      content: "Join a voice channel first, then choose a result.",
-      ephemeral: true
-    });
+    await interaction.editReply("Join a voice channel first, then choose a result.");
     return;
   }
 
   const track = searchCache.get(guildId, parsed.userId, parsed.resultId);
 
   if (!track) {
-    await interaction.followUp({
-      content: "Those search results expired. Run /search again.",
-      ephemeral: true
-    });
+    await interaction.editReply("Those search results expired. Run /search again.");
     return;
   }
 
   if (!track.pageUrl) {
-    await interaction.followUp({
-      content: "That result cannot be played.",
-      ephemeral: true
-    });
+    await interaction.editReply("That result cannot be played.");
     return;
+  }
+
+  await interaction.editReply(`Preparing: **${track.title}**...`);
+
+  try {
+    await interaction.message.edit({
+      content: `${interaction.message.content}\n\nSelected: **${track.title}**`,
+      components: []
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Button play search message update failed: ${message}`);
   }
 
   console.log(
@@ -106,10 +106,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction): P
     console.error(
       `Button play prepareUrlInput failed: guild=${guildId} resultId=${parsed.resultId}`
     );
-    await interaction.followUp({
-      content: getFriendlyPlayError(error),
-      ephemeral: true
-    });
+    await interaction.editReply(getFriendlyPlayError(error));
     return;
   }
 
@@ -134,23 +131,18 @@ export async function handleButtonInteraction(interaction: ButtonInteraction): P
     );
 
     const replyLines: string[] = [
-      `${statusLabel}: **${track.title}**`
+      isPlaying
+        ? `Now playing: **${track.title}**`
+        : `Queued: **${track.title}** at position ${queuePosition}`
     ];
 
     if (track.artist) {
       replyLines.push(`by ${track.artist}`);
     }
 
-    if (!isPlaying) {
-      replyLines.push(`Queue position: ${queuePosition}`);
-    }
-
     replyLines.push("Reminder: only use media you have permission to play.");
 
-    await interaction.followUp({
-      content: replyLines.join("\n"),
-      ephemeral: false
-    });
+    await interaction.editReply(replyLines.join("\n"));
   } catch (error) {
     console.error(
       `Button play voice/queue failed: guild=${guildId} trackId=${queueItem.id}`
@@ -161,9 +153,6 @@ export async function handleButtonInteraction(interaction: ButtonInteraction): P
       console.error(`Button play temp cleanup failed: ${message}`);
     });
 
-    await interaction.followUp({
-      content: getFriendlyPlayError(error),
-      ephemeral: true
-    });
+    await interaction.editReply(getFriendlyPlayError(error));
   }
 }

@@ -24,10 +24,10 @@ Record a short demo with the checklist in [docs/demo-recording-checklist.md](doc
 | Command | Purpose | Status |
 |---|---|---|
 | `/ping` | Check CueBot is online | Implemented |
+| `/help` | Show commands and basic usage notes | Implemented |
 | `/play attachment:<file>` | Upload and play a Discord media attachment | Implemented |
 | `/play url:<url>` | Prepare and play a permitted media URL | Implemented |
 | `/search query:<text>` | Search and render playable results with buttons | Implemented |
-| `/ytsearch query:<text>` | Alias for `/search` | Implemented |
 | `/play result:<n>` | Text fallback for cached search results | Implemented |
 | `/queue` | Show now playing and queued tracks | Implemented |
 | `/nowplaying` | Show the current track | Implemented |
@@ -43,6 +43,7 @@ Record a short demo with the checklist in [docs/demo-recording-checklist.md](doc
 - Attachment playback for MP3, WAV, M4A, OGG, WEBM, and MP4
 - URL playback through `media-core`
 - Button-based search result selection
+- Search downloads only after a user selects a result
 - Per-guild queue state
 - Pause, resume, skip, stop, queue, and now-playing controls
 - FFmpeg/FFprobe validation and conversion
@@ -114,6 +115,7 @@ Useful docs:
 
 - [Local environment guide](docs/local-env.md)
 - [Discord test server setup](docs/discord-test-server-setup.md)
+- [Command reference](docs/commands.md)
 - [CueBot 0.1 test checklist](docs/cuebot-0.1-test-checklist.md)
 - [URL playback design](docs/url-playback-design.md)
 - [Demo recording checklist](docs/demo-recording-checklist.md)

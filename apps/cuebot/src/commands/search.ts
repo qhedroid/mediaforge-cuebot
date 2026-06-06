@@ -5,7 +5,7 @@ import { executeYouTubeSearch } from "../search/youtube-search-handler.js";
 export const searchCommand: CommandModule = {
   data: new SlashCommandBuilder()
     .setName("search")
-    .setDescription("Search YouTube for music to play.")
+    .setDescription("Search YouTube and choose a result to play.")
     .addStringOption((option) =>
       option
         .setName("query")

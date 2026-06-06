@@ -95,6 +95,7 @@ pnpm --filter @mediaforge/cuebot start
 /search query:<search terms>
 [click Play 1 button]
 /play result:1
+/help
 /queue
 /nowplaying
 /pause
@@ -115,7 +116,15 @@ CueBot supports uploaded attachment playback through `/play attachment:<file>`. 
 
 The maximum duration for URL playback is 15 minutes.
 
-`/search query:<text>` searches YouTube and returns up to 5 results with Play buttons. Click a button to queue the track. Results are cached per guild/user for 10 minutes. Join a voice channel before clicking. `/ytsearch` is an alias that works identically. `/play result:<n>` is a text-based fallback if you prefer typing.
+`/search query:<text>` searches YouTube and returns up to 5 readable results with Play buttons. Click a button to queue the track. Results are cached per guild/user for 10 minutes. Join a voice channel before clicking. CueBot downloads/prepares media only after a result is selected. `/play result:<n>` is a text-based fallback if you prefer typing.
+
+`/help` lists the public CueBot commands in Discord.
+
+After command changes, re-register slash commands:
+
+```powershell
+pnpm --filter @mediaforge/cuebot register
+```
 
 ## Troubleshooting
 

@@ -55,15 +55,23 @@ export function renderSearchResults(
   userId: string,
   cachedResults: CachedSearchResult[]
 ): SearchResultsRender {
-  const lines: string[] = [`YouTube results for: **${query}**`, ""];
+  const lines: string[] = [`**Search results for:** ${query}`, ""];
 
   for (const { resultId, track } of cachedResults) {
-    const artist = track.artist ?? "Unknown";
+    const channel = track.artist ?? "Unknown";
     const duration = formatDuration(track.durationMs);
-    lines.push(`**${resultId}.** ${track.title}`, `   ${artist} · ${duration}`, "");
+    lines.push(
+      `**${resultId}. ${track.title}**`,
+      `Channel: ${channel}`,
+      `Duration: ${duration}`,
+      ""
+    );
   }
 
-  lines.push("*Only use media you have permission to play.*");
+  lines.push(
+    "Use the buttons below to queue a result.",
+    "Only use media you have permission to play."
+  );
 
   const buttons = cachedResults.slice(0, 5).map(({ resultId }) =>
     new ButtonBuilder()
