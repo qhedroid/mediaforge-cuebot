@@ -25,8 +25,12 @@ pnpm --filter @mediaforge/cuebot register
 
 ## Search Flow
 
-`/search` is the only public search command. It searches first, caches results per guild/user for 10 minutes, and displays Play buttons. CueBot downloads/prepares media only after a user selects a result.
+`/search` is the main and only public search command. It searches YouTube, caches results per guild/user for 10 minutes, and displays Play buttons. CueBot downloads/prepares media only after a user selects a result.
 
 Only the user who ran `/search` can use that message's Play buttons. Join a voice channel before using `/play` or selecting a result.
 
 Only use media you have permission to play.
+
+## Notes
+
+After re-registering commands, only `/search query:<song>` should appear as the search command in Discord.

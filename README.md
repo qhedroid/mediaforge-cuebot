@@ -2,121 +2,129 @@
 
 ![CueBot logo](assets/cuebot-logo.svg)
 
-CueBot is a TypeScript Discord media bot built inside the MediaForge monorepo. It demonstrates Discord slash commands, button interactions, voice playback, queue controls, FFmpeg-backed media preparation, temporary-file cleanup, and a clean separation between Discord orchestration and reusable media logic.
+CueBot is a Discord music bot powered by MediaForge. It supports uploaded files, direct URLs, YouTube search, button-based result selection, voice playback, queue controls, and local-first media preparation.
 
-MediaForge is the local media-preparation layer. `packages/media-core` owns ingestion, probing, conversion, resolver plumbing, and cleanup. CueBot owns Discord commands, user interaction, queues, and voice sessions.
+MediaForge + CueBot is a TypeScript portfolio project that shows a clean split between Discord orchestration and reusable media tooling. CueBot owns commands, interactions, queues, and voice sessions. `packages/media-core` owns ingestion, probing, conversion, resolver plumbing, and cleanup.
 
 Only use CueBot with media you own or have permission to play.
 
-## Demo Flow
+## Current Features
 
-1. Start CueBot from the repository root.
-2. In Discord, run `/ping` to confirm the bot is online.
-3. Join a voice channel.
-4. Run `/play attachment:<file>` with a small MP3, or run `/search query:<text>` and click a Play button.
-5. Confirm CueBot joins voice and starts playback.
-6. Try `/nowplaying`, `/queue`, `/pause`, `/resume`, `/skip`, and `/stop`.
-
-Record a short demo with the checklist in [docs/demo-recording-checklist.md](docs/demo-recording-checklist.md). Place final captures in [docs/screenshots](docs/screenshots).
+- `/play attachment:<file>` for Discord-uploaded audio/video files.
+- `/play url:<url>` for direct media URLs and supported resolver URLs.
+- `/search query:<song>` with up to 5 YouTube results and Play buttons.
+- Voice playback in the requester's voice channel.
+- Queue controls: `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
+- `/help` for in-Discord usage guidance.
+- FFmpeg/FFprobe preparation for MP3, WAV, M4A, OGG, WEBM, and MP4.
+- Temporary file cleanup under `storage/cuebot-temp`.
+- Secret scanning for committed project files.
 
 ## Commands
 
-| Command | Purpose | Status |
-|---|---|---|
-| `/ping` | Check CueBot is online | Implemented |
-| `/help` | Show commands and basic usage notes | Implemented |
-| `/play attachment:<file>` | Upload and play a Discord media attachment | Implemented |
-| `/play url:<url>` | Prepare and play a permitted media URL | Implemented |
-| `/search query:<text>` | Search and render playable results with buttons | Implemented |
-| `/play result:<n>` | Text fallback for cached search results | Implemented |
-| `/queue` | Show now playing and queued tracks | Implemented |
-| `/nowplaying` | Show the current track | Implemented |
-| `/pause` | Pause playback | Implemented |
-| `/resume` | Resume playback | Implemented |
-| `/skip` | Skip the current track | Implemented |
-| `/stop` | Stop playback, clear queue, disconnect, and clean temp files | Implemented |
+| Command | Purpose |
+|---|---|
+| `/help` | Show commands and usage notes. |
+| `/ping` | Check CueBot is online. |
+| `/search query:<song>` | Search YouTube and choose a result with buttons. |
+| `/play attachment:<file>` | Play an uploaded Discord audio/video file. |
+| `/play url:<url>` | Play a direct media URL or supported resolver URL. |
+| `/play result:<n>` | Text fallback for a cached `/search` result. |
+| `/queue` | Show the current queue. |
+| `/nowplaying` | Show the current track. |
+| `/pause` | Pause playback. |
+| `/resume` | Resume playback. |
+| `/skip` | Skip the current track. |
+| `/stop` | Stop playback, clear the queue, disconnect, and clean temp files. |
 
-## Features
-
-- Discord slash command registration and interaction handling
-- Visible placeholder and error replies
-- Attachment playback for MP3, WAV, M4A, OGG, WEBM, and MP4
-- URL playback through `media-core`
-- Button-based search result selection
-- Search downloads only after a user selects a result
-- Per-guild queue state
-- Pause, resume, skip, stop, queue, and now-playing controls
-- FFmpeg/FFprobe validation and conversion
-- Temporary files under `storage/cuebot-temp`
-- Secret scanning for committed project files
-
-## Known Limitations
-
-- CueBot stores queue/search state in memory only.
-- Restarting the bot clears queues and cached search results.
-- There is no production database yet.
-- There is no dashboard.
-- Error handling is developer-friendly, but embeds and UX polish are still planned.
-- Use is limited to media you own or have permission to play.
-
-## Roadmap
-
-| Milestone | Focus | Status |
-|---|---|---|
-| CueBot 0.1 | Uploaded Discord attachment playback and queue controls | Implemented |
-| CueBot 0.2 | Direct URL playback through `media-core` | Implemented |
-| CueBot 0.3 | Resolver-backed URL playback through `media-core` | Implemented |
-| CueBot 0.4 | Search with button-based result selection | Implemented |
-| CueBot 1.0 | Polished embeds, attribution display, persistence, and demo-ready UX | Planned |
-
-See [docs/version-roadmap.md](docs/version-roadmap.md) for the detailed roadmap.
-
-## Workspace
-
-- `apps/cuebot`: Discord bot commands, interactions, voice sessions, queue state, and runtime.
-- `apps/mediaforge-cli`: Local converter CLI shell.
-- `packages/media-core`: Reusable media ingestion, probing, conversion, resolver, and cleanup logic.
-- `packages/shared`: Shared TypeScript types.
-- `docs`: Setup, architecture, roadmap, and demo documentation.
-- `storage`: Local ignored temp/output/metadata folders.
-- `scripts`: Local development and validation scripts.
-
-## Development
+## Quick Setup
 
 Requirements:
 
 - Node.js 22.12+
 - pnpm 9+
-- FFmpeg and FFprobe available on `PATH`, or configured through `.env`
+- FFmpeg and FFprobe on `PATH`, or configured in `.env`
+- yt-dlp on `PATH`, or configured with `YTDLP_PATH` in `.env`
+- A private Discord test server and bot application
 
-Install dependencies:
+Install and build:
 
-```bash
+```powershell
 pnpm install
-```
-
-Build all packages and apps:
-
-```bash
 pnpm build
-```
-
-Run the secret scanner:
-
-```bash
 pnpm secret:check
+pnpm ytdlp:check
 ```
 
-Copy `.env.example` to `.env` for local development. Do not commit `.env` or secrets.
+Create a local `.env` in the repository root from `.env.example`. Do not commit `.env`.
 
-## Discord Setup
+Register commands and start CueBot:
 
-Useful docs:
+```powershell
+pnpm --filter @mediaforge/cuebot register
+pnpm --filter @mediaforge/cuebot start
+```
 
+## Demo Flow
+
+1. Start CueBot and keep the terminal visible.
+2. In Discord, join a voice channel.
+3. Run `/help`.
+4. Run `/play attachment:<file>` with a small MP3.
+5. Run `/search query:<song>`.
+6. Click a Play button and watch CueBot prepare, queue, and play the selection.
+7. Run `/queue`, `/pause`, `/resume`, `/skip`, and `/stop`.
+
+See [docs/demo-script.md](docs/demo-script.md) and [docs/demo-recording-checklist.md](docs/demo-recording-checklist.md).
+
+## Architecture
+
+- `apps/cuebot`: Discord commands, button interactions, queues, voice sessions, and runtime.
+- `apps/mediaforge-cli`: local MediaForge CLI shell.
+- `packages/media-core`: reusable media ingestion, FFmpeg/FFprobe preparation, URL resolver support, provider/search helpers, and cleanup.
+- `packages/shared`: shared TypeScript types.
+- `storage`: local ignored temp/output/metadata folders.
+- `scripts`: local setup and validation scripts.
+
+CueBot does not contain FFmpeg, download, conversion, or resolver implementation details directly. It delegates media preparation to `media-core`.
+
+## Legal-Use Note
+
+CueBot is for local development and legally permitted media playback: your own files, public-domain content, Creative Commons-licensed content, direct media URLs you are allowed to use, and content the rights holder permits you to play. It is not intended as piracy tooling.
+
+## Roadmap
+
+| Milestone | Focus | Status |
+|---|---|---|
+| CueBot 0.1 | Uploaded file playback and queue controls | Implemented |
+| CueBot 0.2 | Direct URL and resolver-backed URL playback | Implemented |
+| CueBot 0.3 | YouTube search with button-based selection | Implemented |
+| CueBot 0.4 | Branding, docs, demo flow, UX stability | In progress |
+| CueBot 1.0 | Polished embeds, button controls, persistence, attribution, and demo-ready reliability | Planned |
+| MediaForge | Desktop/CLI polish for local media preparation | Planned |
+
+Future ideas include playlist support and Spotify metadata support. Playback provider expansion should stay inside `media-core` or MediaForge-owned resolver/provider boundaries.
+
+## Tech Stack
+
+- TypeScript
+- Node.js 22+
+- pnpm workspaces
+- discord.js
+- @discordjs/voice
+- FFmpeg and FFprobe
+- yt-dlp
+- JSON metadata for MVP local storage
+- Windows-first local development
+
+## Docs
+
+- [Branding](docs/branding.md)
+- [Command reference](docs/commands.md)
 - [Local environment guide](docs/local-env.md)
 - [Discord test server setup](docs/discord-test-server-setup.md)
-- [Command reference](docs/commands.md)
-- [CueBot 0.1 test checklist](docs/cuebot-0.1-test-checklist.md)
+- [YouTube search design](docs/youtube-search-design.md)
 - [URL playback design](docs/url-playback-design.md)
-- [Demo recording checklist](docs/demo-recording-checklist.md)
+- [Version roadmap](docs/version-roadmap.md)
+- [Demo script](docs/demo-script.md)
 - [GitHub repo metadata](docs/github-repo-metadata.md)

@@ -1,82 +1,56 @@
 # Version Roadmap
 
-## CueBot 0.1 - Implemented
+## Implemented
 
-Goal: uploaded Discord file playback with basic queue controls.
+### CueBot 0.1 - Uploaded File Playback
 
-Target command:
+Status: implemented.
 
-```text
-/play attachment:<file>
-```
+- `/play attachment:<file>` accepts Discord-uploaded media.
+- MP3 plays directly.
+- WAV, M4A, OGG, WEBM, and MP4 are prepared through FFmpeg.
+- CueBot joins the requester's voice channel and starts playback.
+- Queue controls are available through `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
 
-Status:
+### Direct URL and YouTube URL Playback
 
-- Supports uploaded Discord attachments through `/play attachment:<file>`.
-- MP3 plays directly; WAV, M4A, OGG, WEBM, and MP4 are prepared through FFmpeg.
-- Includes `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
+Status: implemented.
 
-## CueBot 0.2 - Implemented
+- `/play url:<url>` supports direct media URLs.
+- Resolver-backed URLs are prepared through `packages/media-core`.
+- FFmpeg/FFprobe validation remains inside media-core.
+- Temporary files are cleaned after playback or stop flows.
 
-Goal: direct URL playback through `packages/media-core` for legally permitted media.
+### YouTube Search With Buttons
 
-Target command:
+Status: implemented.
 
-```text
-/play url:<supported_url>
-```
-
-Status:
-
-- Supports direct HTTP/HTTPS media URLs.
-- Supports resolver URLs through `media-core`.
-- Temporary URL files are deleted after playback or `/stop`.
-
-## CueBot 0.3 - Implemented
-
-Goal: resolver-backed URL playback through `packages/media-core`.
-
-Target command:
-
-```text
-/play url:<resolver_url>
-```
-
-Status:
-
-- `media-core` owns resolver invocation and audio extraction.
-- Duration capped at 15 minutes.
-- Playlists are blocked.
-
-## CueBot 0.4 - Implemented
-
-Goal: YouTube search with button-based result selection.
-
-Target commands:
-
-```text
-/search query:<text>
-[click Play 1-5 button]
-/play result:<n>  (fallback)
-```
-
-Status:
-
-- `/search` is the only public search command.
+- `/search query:<text>` is the main user-facing search command.
 - Search returns up to 5 results with Play buttons.
 - Results are cached per guild/user for 10 minutes.
-- Audio is downloaded/prepared only after the user clicks a Play button.
-- Button ownership is enforced: only the user who ran `/search` can use their buttons.
-- `/play result:<n>` remains as a text fallback.
+- Media is downloaded/prepared only after a user selects a result.
+- Button clicks show immediate preparing feedback.
+- `/play result:<n>` remains as a text fallback for cached search results.
 
-## CueBot 1.0 - Planned
+## Future
 
-Goal: stable release with polished UX, embeds, attribution display, persistence, and demo-ready reliability.
+### UX and Reliability
 
-Planned focus:
+- Polished Discord embeds.
+- Button controls for queue actions where useful.
+- Clearer attribution and license display.
+- Persistent queue/search state.
+- Broader automated test coverage.
 
-- Cleaner embeds and richer status messages.
-- Better attribution display for licensed content.
-- Durable queue/search state.
-- Broader test coverage.
-- More polished demo materials.
+### Provider and Metadata Expansion
+
+- Playlist support.
+- Spotify metadata support.
+- Better provider metadata normalization in `packages/media-core`.
+
+### MediaForge Polish
+
+- MediaForge desktop/CLI polish.
+- Cleaner local conversion workflows.
+- Better local library metadata editing.
+- More explicit MediaForge-to-CueBot handoff documentation.
