@@ -32,6 +32,15 @@ Status: implemented.
 - Button clicks show immediate preparing feedback.
 - `/play result:<n>` remains as a text fallback for cached search results.
 
+### Spotify Playlist Import
+
+Status: implemented.
+
+- `/spotify playlist:<url>` reads playlist metadata through the Spotify Web API.
+- CueBot extracts track title and artist names.
+- CueBot searches for playable matches through the existing search pipeline.
+- CueBot does not rip, download, stream, or bypass Spotify audio.
+
 ## Future
 
 ### UX and Reliability
@@ -45,7 +54,7 @@ Status: implemented.
 ### Provider and Metadata Expansion
 
 - Playlist support.
-- Spotify metadata support.
+- Expanded Spotify metadata display.
 - Better provider metadata normalization in `packages/media-core`.
 
 ### MediaForge Polish

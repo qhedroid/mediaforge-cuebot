@@ -11,6 +11,7 @@ export const helpCommand: CommandModule = {
         "**CueBot commands**",
         "",
         "`/search query:<song>` - search YouTube and choose a result",
+        "`/spotify playlist:<url>` - import Spotify playlist metadata and queue matched results",
         "`/play attachment:<file>` - play an uploaded audio/video file",
         "`/play url:<url>` - play a direct media or supported URL",
         "`/queue` - show the queue",
@@ -22,6 +23,7 @@ export const helpCommand: CommandModule = {
         "`/ping` - check bot status",
         "",
         "Join a voice channel before using `/play` or selecting a search result.",
+        "Spotify is used for playlist metadata only; CueBot does not stream or download Spotify audio.",
         "Only use media you have permission to play."
       ].join("\n"),
       ephemeral: false

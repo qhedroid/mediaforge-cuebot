@@ -13,6 +13,11 @@ export { ProviderRegistry } from "./provider-registry.js";
 export { prepareUrlInput, UrlIngestError, UrlIngestService } from "./url-ingest.service.js";
 export { checkYtDlpAvailable, YtDlpError } from "./ytdlp.service.js";
 export { searchYouTube, YouTubeSearchError } from "./youtube-search.service.js";
+export {
+  getSpotifyPlaylistTracks,
+  SpotifyPlaylistError
+} from "./spotify-playlist.service.js";
+export type { SpotifyPlaylistTrack } from "./spotify-playlist.service.js";
 export { ResolverRegistry } from "./url-resolvers/resolver-registry.js";
 export type { ResolvedMedia, UrlResolver } from "./url-resolvers/url-resolver.js";
 export { InternetArchiveProvider } from "./providers/internet-archive.provider.js";

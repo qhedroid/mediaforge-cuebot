@@ -15,6 +15,8 @@
     "dev:mediaforge": "pnpm --filter @mediaforge/mediaforge-cli dev",
     "media:test": "node scripts/test-local-media.mjs",
     "secret:check": "node scripts/secret-check.mjs",
+    "health:cuebot": "node scripts/health-check.mjs",
+    "start:cuebot:prod": "pnpm --filter @mediaforge/cuebot start",
     "typecheck": "tsc -b --pretty",
     "url:test": "node scripts/test-direct-url.mjs",
     "ytdlp:check": "node scripts/check-ytdlp.mjs"

@@ -13,6 +13,7 @@ pnpm --filter @mediaforge/cuebot register
 | `/help` | Show CueBot commands and basic usage notes. |
 | `/ping` | Check whether CueBot is online and responding. |
 | `/search query:<song>` | Search YouTube and show up to 5 results with Play buttons. |
+| `/spotify playlist:<url>` | Import Spotify playlist metadata and queue matched playable results. |
 | `/play attachment:<file>` | Play an uploaded Discord audio/video attachment. |
 | `/play url:<url>` | Play a direct media URL or supported resolver URL. |
 | `/play result:<n>` | Fallback text command for a cached `/search` result. |
@@ -30,6 +31,10 @@ pnpm --filter @mediaforge/cuebot register
 Only the user who ran `/search` can use that message's Play buttons. Join a voice channel before using `/play` or selecting a result.
 
 Only use media you have permission to play.
+
+## Spotify Playlist Import
+
+`/spotify playlist:<url>` uses Spotify only for playlist metadata: track titles, artists, duration, and Spotify links. CueBot does not download, stream, or bypass Spotify audio. It searches for playable matches through the existing search pipeline and queues those matches.
 
 ## Notes
 

@@ -13,6 +13,7 @@ Only use CueBot with media you own or have permission to play.
 - `/play attachment:<file>` for Discord-uploaded audio/video files.
 - `/play url:<url>` for direct media URLs and supported resolver URLs.
 - `/search query:<song>` with up to 5 YouTube results and Play buttons.
+- `/spotify playlist:<url>` for Spotify metadata-only playlist import.
 - Voice playback in the requester's voice channel.
 - Queue controls: `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
 - `/help` for in-Discord usage guidance.
@@ -27,6 +28,7 @@ Only use CueBot with media you own or have permission to play.
 | `/help` | Show commands and usage notes. |
 | `/ping` | Check CueBot is online. |
 | `/search query:<song>` | Search YouTube and choose a result with buttons. |
+| `/spotify playlist:<url>` | Import Spotify playlist metadata and queue matched results. |
 | `/play attachment:<file>` | Play an uploaded Discord audio/video file. |
 | `/play url:<url>` | Play a direct media URL or supported resolver URL. |
 | `/play result:<n>` | Text fallback for a cached `/search` result. |
@@ -45,6 +47,7 @@ Requirements:
 - pnpm 9+
 - FFmpeg and FFprobe on `PATH`, or configured in `.env`
 - yt-dlp on `PATH`, or configured with `YTDLP_PATH` in `.env`
+- Spotify Web API credentials for playlist import
 - A private Discord test server and bot application
 
 Install and build:
@@ -100,10 +103,11 @@ CueBot is for local development and legally permitted media playback: your own f
 | CueBot 0.2 | Direct URL and resolver-backed URL playback | Implemented |
 | CueBot 0.3 | YouTube search with button-based selection | Implemented |
 | CueBot 0.4 | Branding, docs, demo flow, UX stability | In progress |
+| CueBot 0.5 | Spotify playlist metadata import | Implemented |
 | CueBot 1.0 | Polished embeds, button controls, persistence, attribution, and demo-ready reliability | Planned |
 | MediaForge | Desktop/CLI polish for local media preparation | Planned |
 
-Future ideas include playlist support and Spotify metadata support. Playback provider expansion should stay inside `media-core` or MediaForge-owned resolver/provider boundaries.
+Future ideas include playlist playback controls and expanded Spotify metadata display. Playback provider expansion should stay inside `media-core` or MediaForge-owned resolver/provider boundaries.
 
 ## Tech Stack
 
@@ -126,5 +130,7 @@ Future ideas include playlist support and Spotify metadata support. Playback pro
 - [YouTube search design](docs/youtube-search-design.md)
 - [URL playback design](docs/url-playback-design.md)
 - [Version roadmap](docs/version-roadmap.md)
+- [Oracle Cloud deployment](docs/deployment-oracle-cloud.md)
+- [Spotify playlist import](docs/spotify-playlist-import.md)
 - [Demo script](docs/demo-script.md)
 - [GitHub repo metadata](docs/github-repo-metadata.md)

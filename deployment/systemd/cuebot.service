@@ -1,0 +1,23 @@
+[Unit]
+Description=CueBot Discord music bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cuebot
+Group=cuebot
+WorkingDirectory=/opt/mediaforge-cuebot
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/cuebot/cuebot.env
+ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @mediaforge/cuebot start'
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cuebot
+
+[Install]
+WantedBy=multi-user.target
