@@ -9,12 +9,14 @@ Developers may name their private Discord test application `CueBot Dev` while te
 
 ## Logo Concept
 
-- Circular dark icon.
-- Music note combined with a play button.
-- Subtle queue or sound-wave motif.
-- Cyan/purple accent.
+- Circular Discord avatar.
+- Dark navy/charcoal background.
+- Cyan and purple accent.
+- Music note merged with a play button.
+- Subtle queue/sound-wave motif.
 - No text.
-- Readable as a small Discord avatar.
+- Readable at small Discord avatar size.
+- Clean vector/app icon style.
 
 Suggested files:
 
@@ -26,4 +28,16 @@ Suggested files:
 
 ```text
 CueBot is a Discord music bot powered by MediaForge, supporting uploaded files, direct URLs, YouTube search, queue controls, and local-first media preparation.
+```
+
+## Logo Generation Prompt
+
+```text
+Modern minimal Discord music bot logo for CueBot. Circular dark navy background, cyan and purple gradient music note merged with a play button, subtle sound wave and queue-line motif, clean vector style, high contrast, no text, app icon quality, readable at small size.
+```
+
+## Alternate Logo Prompt
+
+```text
+Minimal app icon for CueBot, a Discord music bot. Dark circular background, glowing cyan-purple play button shaped like a music note, small queue lines and audio wave accents, futuristic but clean, no text, simple vector design, high contrast.
 ```

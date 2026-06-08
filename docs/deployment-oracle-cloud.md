@@ -103,6 +103,53 @@ cd /opt/mediaforge-cuebot
 corepack pnpm health:cuebot
 ```
 
+## Stopping the Oracle-hosted CueBot
+
+CueBot is moving to the M4 Mac mini home-server deployment for full functionality. The Oracle Cloud VM should not run CueBot at the same time because it can conflict with the Mac-hosted instance, and YouTube playback can be blocked by Oracle datacentre IP reputation.
+
+The VM can remain available as a fallback for command testing, attachment playback, direct media URLs, and non-YouTube features. Do not destroy the VM unless you explicitly decide to remove the fallback.
+
+SSH into the VM:
+
+```bash
+ssh ubuntu@79.72.69.234
+```
+
+Stop CueBot:
+
+```bash
+sudo systemctl stop cuebot
+```
+
+Disable CueBot from starting on boot:
+
+```bash
+sudo systemctl disable cuebot
+```
+
+Check status:
+
+```bash
+sudo systemctl status cuebot --no-pager
+```
+
+Expected status:
+
+```text
+Active: inactive (dead)
+Loaded: loaded (...; disabled; ...)
+```
+
+Optional service-file cleanup:
+
+```bash
+sudo rm /etc/systemd/system/cuebot.service
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+```
+
+Do not delete `/opt/mediaforge-cuebot` unless explicitly requested. Keeping the checkout makes it easier to reuse the VM as a fallback later.
+
 ## Update Deployment
 
 ```bash

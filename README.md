@@ -95,6 +95,10 @@ Alternative:
 - YouTube playback may be blocked by cloud/datacentre IP reputation.
 - See [docs/deployment-oracle-cloud.md](docs/deployment-oracle-cloud.md).
 
+## Branding
+
+CueBot branding guidance, Discord description text, and logo generation prompts live in [docs/branding.md](docs/branding.md).
+
 ## Architecture
 
 - `apps/cuebot`: Discord commands, button interactions, queues, voice sessions, and runtime.
