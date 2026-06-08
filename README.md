@@ -80,6 +80,21 @@ pnpm --filter @mediaforge/cuebot start
 
 See [docs/demo-script.md](docs/demo-script.md) and [docs/demo-recording-checklist.md](docs/demo-recording-checklist.md).
 
+## Deployment
+
+Recommended production path:
+
+- **M4 Mac mini / home server** for full CueBot functionality, especially YouTube playback.
+- The Mac mini can run 24/7 while the Windows PC is off.
+- It uses the home/residential network instead of a cloud/datacentre IP.
+- See [docs/deployment-home-server-mac.md](docs/deployment-home-server-mac.md).
+
+Alternative:
+
+- **Oracle Cloud Always Free** is useful for 24/7 bot uptime, attachment playback, direct media URLs, command testing, and non-YouTube features.
+- YouTube playback may be blocked by cloud/datacentre IP reputation.
+- See [docs/deployment-oracle-cloud.md](docs/deployment-oracle-cloud.md).
+
 ## Architecture
 
 - `apps/cuebot`: Discord commands, button interactions, queues, voice sessions, and runtime.
@@ -129,6 +144,8 @@ Future ideas include playlist playback controls and expanded Spotify metadata di
 - [Discord test server setup](docs/discord-test-server-setup.md)
 - [YouTube search design](docs/youtube-search-design.md)
 - [URL playback design](docs/url-playback-design.md)
+- [Production environment](docs/production-env.md)
+- [Mac mini home-server deployment](docs/deployment-home-server-mac.md)
 - [Version roadmap](docs/version-roadmap.md)
 - [Oracle Cloud deployment](docs/deployment-oracle-cloud.md)
 - [Spotify playlist import](docs/spotify-playlist-import.md)

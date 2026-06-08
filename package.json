@@ -14,6 +14,7 @@
     "dev:cuebot": "pnpm --filter @mediaforge/cuebot dev",
     "dev:mediaforge": "pnpm --filter @mediaforge/mediaforge-cli dev",
     "media:test": "node scripts/test-local-media.mjs",
+    "mac:check": "node scripts/mac-deploy-check.mjs",
     "secret:check": "node scripts/secret-check.mjs",
     "health:cuebot": "node scripts/health-check.mjs",
     "start:cuebot:prod": "pnpm --filter @mediaforge/cuebot start",

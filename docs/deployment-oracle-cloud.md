@@ -6,6 +6,8 @@ This guide runs CueBot 24/7 on an Oracle Cloud Always Free VM with systemd.
 
 Use an Oracle Cloud Always Free VM for the portfolio deployment. Discord bots need a long-running process, so sleeping free tiers are a poor fit.
 
+Oracle remains useful for 24/7 bot uptime, attachment playback, direct media URLs, command testing, and non-YouTube features. YouTube playback can be blocked by cloud/datacentre IP reputation. For full CueBot functionality, especially YouTube playback, the recommended production deployment is the M4 Mac mini home server documented in [deployment-home-server-mac.md](deployment-home-server-mac.md).
+
 Recommended VM:
 
 - Ubuntu 22.04 or 24.04

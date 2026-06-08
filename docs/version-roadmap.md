@@ -41,6 +41,14 @@ Status: implemented.
 - CueBot searches for playable matches through the existing search pipeline.
 - CueBot does not rip, download, stream, or bypass Spotify audio.
 
+### Deployment Paths
+
+Status: implemented.
+
+- M4 Mac mini home server is the recommended production path for full CueBot functionality.
+- Oracle Cloud Always Free remains an alternative/fallback for uptime, command testing, attachment playback, direct media URLs, and non-YouTube features.
+- YouTube playback can be blocked by cloud/datacentre IP reputation.
+
 ## Future
 
 ### UX and Reliability
@@ -49,6 +57,8 @@ Status: implemented.
 - Button controls for queue actions where useful.
 - Clearer attribution and license display.
 - Persistent queue/search state.
+- Deployment health monitoring.
+- Auto-update script for home-server and Oracle deployments.
 - Broader automated test coverage.
 
 ### Provider and Metadata Expansion
