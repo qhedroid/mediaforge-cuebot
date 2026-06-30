@@ -18,3 +18,16 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 Thumbs.db
+
+# Internal AI/tooling notes
+/internal/
+/prompts/
+/build-prompts/
+/handoff/
+/ai-notes/
+/agent-notes/
+*PROMPT*.md
+*CHATGPT*.md
+*AI_NOTES*.md
+*CODEX*.md
+*AGENT*.md

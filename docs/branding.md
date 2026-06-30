@@ -29,15 +29,3 @@ Suggested files:
 ```text
 CueBot is a Discord music bot powered by MediaForge, supporting uploaded files, direct URLs, YouTube search, queue controls, and local-first media preparation.
 ```
-
-## Logo Generation Prompt
-
-```text
-Modern minimal Discord music bot logo for CueBot. Circular dark navy background, cyan and purple gradient music note merged with a play button, subtle sound wave and queue-line motif, clean vector style, high contrast, no text, app icon quality, readable at small size.
-```
-
-## Alternate Logo Prompt
-
-```text
-Minimal app icon for CueBot, a Discord music bot. Dark circular background, glowing cyan-purple play button shaped like a music note, small queue lines and audio wave accents, futuristic but clean, no text, simple vector design, high contrast.
-```

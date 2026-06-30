@@ -72,4 +72,4 @@ Status: implemented.
 - MediaForge desktop/CLI polish.
 - Cleaner local conversion workflows.
 - Better local library metadata editing.
-- More explicit MediaForge-to-CueBot handoff documentation.
+- Clearer documentation for moving prepared media from MediaForge into CueBot playback workflows.
