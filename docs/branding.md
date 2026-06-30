@@ -9,12 +9,14 @@ Developers may name their private Discord test application `CueBot Dev` while te
 
 ## Logo Concept
 
-- Circular dark icon.
-- Music note combined with a play button.
-- Subtle queue or sound-wave motif.
-- Cyan/purple accent.
+- Circular Discord avatar.
+- Dark navy/charcoal background.
+- Cyan and purple accent.
+- Music note merged with a play button.
+- Subtle queue/sound-wave motif.
 - No text.
-- Readable as a small Discord avatar.
+- Readable at small Discord avatar size.
+- Clean vector/app icon style.
 
 Suggested files:
 

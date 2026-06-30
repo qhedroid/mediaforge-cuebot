@@ -78,8 +78,6 @@ pnpm --filter @mediaforge/cuebot start
 6. Click a Play button and watch CueBot prepare, queue, and play the selection.
 7. Run `/queue`, `/pause`, `/resume`, `/skip`, and `/stop`.
 
-See [docs/demo-script.md](docs/demo-script.md) and [docs/demo-recording-checklist.md](docs/demo-recording-checklist.md).
-
 ## Deployment
 
 Recommended production path:
@@ -93,7 +91,10 @@ Alternative:
 
 - **Oracle Cloud Always Free** is useful for 24/7 bot uptime, attachment playback, direct media URLs, command testing, and non-YouTube features.
 - YouTube playback may be blocked by cloud/datacentre IP reputation.
-- See [docs/deployment-oracle-cloud.md](docs/deployment-oracle-cloud.md).
+
+## Branding
+
+CueBot branding guidance and Discord description text live in [docs/branding.md](docs/branding.md).
 
 ## Architecture
 
@@ -147,7 +148,4 @@ Future ideas include playlist playback controls and expanded Spotify metadata di
 - [Production environment](docs/production-env.md)
 - [Mac mini home-server deployment](docs/deployment-home-server-mac.md)
 - [Version roadmap](docs/version-roadmap.md)
-- [Oracle Cloud deployment](docs/deployment-oracle-cloud.md)
 - [Spotify playlist import](docs/spotify-playlist-import.md)
-- [Demo script](docs/demo-script.md)
-- [GitHub repo metadata](docs/github-repo-metadata.md)
