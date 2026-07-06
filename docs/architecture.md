@@ -1,70 +1,75 @@
-# Architecture
+# MediaForge Architecture
 
-## Boundaries
+MediaForge is a local-first batch media processing pipeline. It keeps orchestration in the CLI, reusable media services in `packages/media-core`, and shared contracts in `packages/shared`.
 
-CueBot is the Discord application layer. It should contain command registration, command handlers, voice session orchestration, queue management, playback state, and Discord embeds.
+## Local-First Design
 
-CueBot must not contain FFmpeg execution, FFprobe inspection, URL ingestion, provider search, or conversion logic directly. Those capabilities belong in `packages/media-core`.
+The pipeline resolves local paths, validates local inputs, and writes planned outputs under repository-controlled storage directories. It does not require hosted services, secrets, or remote job queues. Dry-run mode is the primary demo path because it verifies the workflow without requiring large media fixtures or real transcoding.
 
-MediaForge is a personal local converter. The CLI app should call `packages/media-core` for conversion, metadata, and cleanup workflows.
-
-## Packages
-
-`packages/shared` contains shared TypeScript contracts:
-
-- `TrackMetadata`
-- `QueueItem`
-- `PrepareOptions`
-- `AttachmentInput`
-- `UrlInput`
-- `PlaybackStatus`
-- `MediaSourceType`
-- `MusicProvider`
-- `SearchQuery`
-- `SearchResult`
-- `ProviderTrack`
-- `CueBotVersion`
-
-`packages/media-core` contains reusable media preparation modules:
-
-- `ffmpeg.service.ts`
-- `ffprobe.service.ts`
-- `attachment-ingest.service.ts`
-- `url-ingest.service.ts`
-- `conversion.service.ts`
-- `metadata.service.ts`
-- `cleanup.service.ts`
-- `provider-registry.ts`
-- `providers/local-library.provider.ts`
-- `providers/jamendo.provider.ts`
-- `providers/internet-archive.provider.ts`
-
-## Data Flow
-
-CueBot 0.1 attachment playback:
+## Pipeline Flow
 
 ```text
-Discord command -> CueBot command handler -> media-core attachment ingest -> metadata/conversion -> CueBot queue -> voice playback
+JSON config
+  -> config validation
+  -> local input resolution
+  -> stage normalization
+  -> output path generation
+  -> command planning
+  -> dry-run report or injected runner execution
 ```
 
-CueBot 0.2 provider search:
+## Stages
 
-```text
-Discord command -> CueBot command handler -> media-core provider registry -> provider result metadata -> CueBot embed/results -> queue by result ID
-```
+MediaForge supports three ordered stages:
 
-CueBot 1.0 MediaForge URL playback:
+| Stage | Responsibility |
+|---|---|
+| `probe` | Build an FFprobe inspection command for the source asset. |
+| `transcode` | Build an FFmpeg command for the target output asset. |
+| `metadata` | Prepare metadata output for downstream use and handover. |
 
-```text
-Discord command -> CueBot command handler -> media-core URL ingest -> legal source validation -> metadata/conversion -> CueBot queue -> voice playback
-```
+Configs may list stages in any order. The pipeline normalizes them into `probe`, `transcode`, then `metadata` so repeated runs are predictable.
 
-## Storage
+## Config Model
 
-MVP storage is local JSON and local files:
+The config is a JSON object with:
 
-- `storage/cuebot-temp`: ignored temporary CueBot media workspace.
-- `storage/mediaforge-output`: ignored local converter output.
-- `storage/metadata`: ignored JSON metadata records.
+- `inputDir`: optional base directory for source assets.
+- `outputDir`: required output directory for generated assets.
+- `targetFormat`: optional `mp3`, `wav`, or `opus`; defaults to `mp3`.
+- `assets`: required non-empty list of local input assets.
 
-Each storage directory keeps a committed `.gitkeep`, while generated contents are ignored.
+Each asset may define:
+
+- `input`: required local path relative to `inputDir`.
+- `outputName`: optional filename stem for the generated output.
+- `stages`: optional subset of supported stages.
+
+## FFmpeg Usage
+
+MediaForge currently plans FFprobe and FFmpeg commands rather than bundling either tool. FFprobe is used for source inspection. FFmpeg is used for audio-focused output generation with video removed via `-vn`. Real execution should run only in environments where FFmpeg and FFprobe are installed and the source media is legally permitted for local processing.
+
+## Error Handling
+
+Config errors use `MediaForgeConfigError` with clear messages for invalid JSON shape, unsupported formats, unsupported stages, or missing required fields.
+
+Pipeline errors use `MediaForgePipelineError`. Missing inputs fail before command execution. Stage execution failures include the failed stage name so operators can identify whether the issue was probing, transcoding, or metadata generation.
+
+## Relationship To CueBot
+
+CueBot is the Discord application layer. It owns commands, interactions, queues, and voice sessions. `packages/media-core` owns reusable media services. MediaForge is the local CLI pipeline surface that demonstrates batch workflow design around the same media preparation boundary.
+
+## Limitations
+
+- Full non-dry-run execution is intentionally thin and expects an injected command runner.
+- The metadata stage is currently planned rather than persisted as a complete artifact.
+- There is no verified Docker workflow.
+- The project is scoped to local, legally permitted media workflows.
+
+## Future Improvements
+
+- Add a production-quality local command runner.
+- Persist metadata JSON files with duration, source, output, and run details.
+- Add tiny generated media fixtures for end-to-end FFmpeg validation.
+- Expand CLI help and config examples.
+- Add Docker only if it is implemented, tested, and useful for local handoff.

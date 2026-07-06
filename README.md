@@ -1,151 +1,207 @@
-# CueBot
+# MediaForge
 
-![CueBot logo](assets/cuebot-logo.svg)
+MediaForge is a local-first batch media processing pipeline for repeatable media asset workflows.
 
-CueBot is a Discord music bot powered by MediaForge. It supports uploaded files, direct URLs, YouTube search, button-based result selection, voice playback, queue controls, and local-first media preparation.
+MediaForge demonstrates pipeline design, repeatable automation, local-first tooling, batch processing, operational thinking, testing and CI discipline, and documentation for handover.
 
-MediaForge + CueBot is a TypeScript portfolio project that shows a clean split between Discord orchestration and reusable media tooling. CueBot owns commands, interactions, queues, and voice sessions. `packages/media-core` owns ingestion, probing, conversion, resolver plumbing, and cleanup.
+## Problem Statement
 
-Only use CueBot with media you own or have permission to play.
+Small media projects often need the same preparation steps repeated across many files: inspect the source, create a playback-ready derivative, store predictable outputs, and document what happened. Doing that manually is slow, inconsistent, and hard to hand over.
 
-## Current Features
+MediaForge provides a simple TypeScript pipeline that turns those repeated local media preparation steps into a predictable plan. It is designed for portfolio demonstration, local media workflows, and legally permitted assets that the user owns or has permission to process.
 
-- `/play attachment:<file>` for Discord-uploaded audio/video files.
-- `/play url:<url>` for direct media URLs and supported resolver URLs.
-- `/search query:<song>` with up to 5 YouTube results and Play buttons.
-- `/spotify playlist:<url>` for Spotify metadata-only playlist import.
-- Voice playback in the requester's voice channel.
-- Queue controls: `/queue`, `/nowplaying`, `/pause`, `/resume`, `/skip`, and `/stop`.
-- `/help` for in-Discord usage guidance.
-- FFmpeg/FFprobe preparation for MP3, WAV, M4A, OGG, WEBM, and MP4.
-- Temporary file cleanup under `storage/cuebot-temp`.
-- Secret scanning for committed project files.
+## What MediaForge Does
 
-## Commands
+MediaForge reads a JSON pipeline config, resolves local input files, orders the requested processing stages, builds FFprobe/FFmpeg command plans, generates stable output paths, and supports dry-run verification before any processing is attempted.
 
-| Command | Purpose |
-|---|---|
-| `/help` | Show commands and usage notes. |
-| `/ping` | Check CueBot is online. |
-| `/search query:<song>` | Search YouTube and choose a result with buttons. |
-| `/spotify playlist:<url>` | Import Spotify playlist metadata and queue matched results. |
-| `/play attachment:<file>` | Play an uploaded Discord audio/video file. |
-| `/play url:<url>` | Play a direct media URL or supported resolver URL. |
-| `/play result:<n>` | Text fallback for a cached `/search` result. |
-| `/queue` | Show the current queue. |
-| `/nowplaying` | Show the current track. |
-| `/pause` | Pause playback. |
-| `/resume` | Resume playback. |
-| `/skip` | Skip the current track. |
-| `/stop` | Stop playback, clear the queue, disconnect, and clean temp files. |
+The repository also includes CueBot, a Discord bot that uses the same `packages/media-core` media preparation layer. CueBot is a companion demo of the reusable media tooling, while MediaForge is the local batch pipeline surface.
 
-## Quick Setup
+## Why It Exists
 
-Requirements:
+MediaForge exists to show how a media workflow can be made repeatable, testable, and easy to operate without becoming a SaaS platform or relying on external services. The project emphasizes clear boundaries, deterministic local behavior, CI-backed confidence, and documentation that another engineer can follow.
 
-- Node.js 22.12+
-- pnpm 9+
-- FFmpeg and FFprobe on `PATH`, or configured in `.env`
-- yt-dlp on `PATH`, or configured with `YTDLP_PATH` in `.env`
-- Spotify Web API credentials for playlist import
-- A private Discord test server and bot application
+## Key Features
 
-Install and build:
-
-```powershell
-pnpm install
-pnpm build
-pnpm secret:check
-pnpm ytdlp:check
-```
-
-Create a local `.env` in the repository root from `.env.example`. Do not commit `.env`.
-
-Register commands and start CueBot:
-
-```powershell
-pnpm --filter @mediaforge/cuebot register
-pnpm --filter @mediaforge/cuebot start
-```
-
-## Demo Flow
-
-1. Start CueBot and keep the terminal visible.
-2. In Discord, join a voice channel.
-3. Run `/help`.
-4. Run `/play attachment:<file>` with a small MP3.
-5. Run `/search query:<song>`.
-6. Click a Play button and watch CueBot prepare, queue, and play the selection.
-7. Run `/queue`, `/pause`, `/resume`, `/skip`, and `/stop`.
-
-## Deployment
-
-Recommended production path:
-
-- **M4 Mac mini / home server** for full CueBot functionality, especially YouTube playback.
-- The Mac mini can run 24/7 while the Windows PC is off.
-- It uses the home/residential network instead of a cloud/datacentre IP.
-- See [docs/deployment-home-server-mac.md](docs/deployment-home-server-mac.md).
-
-Alternative:
-
-- **Oracle Cloud Always Free** is useful for 24/7 bot uptime, attachment playback, direct media URLs, command testing, and non-YouTube features.
-- YouTube playback may be blocked by cloud/datacentre IP reputation.
-
-## Branding
-
-CueBot branding guidance and Discord description text live in [docs/branding.md](docs/branding.md).
-
-## Architecture
-
-- `apps/cuebot`: Discord commands, button interactions, queues, voice sessions, and runtime.
-- `apps/mediaforge-cli`: local MediaForge CLI shell.
-- `packages/media-core`: reusable media ingestion, FFmpeg/FFprobe preparation, URL resolver support, provider/search helpers, and cleanup.
-- `packages/shared`: shared TypeScript types.
-- `storage`: local ignored temp/output/metadata folders.
-- `scripts`: local setup and validation scripts.
-
-CueBot does not contain FFmpeg, download, conversion, or resolver implementation details directly. It delegates media preparation to `media-core`.
-
-## Legal-Use Note
-
-CueBot is for local development and legally permitted media playback: your own files, public-domain content, Creative Commons-licensed content, direct media URLs you are allowed to use, and content the rights holder permits you to play. It is not intended as piracy tooling.
-
-## Roadmap
-
-| Milestone | Focus | Status |
-|---|---|---|
-| CueBot 0.1 | Uploaded file playback and queue controls | Implemented |
-| CueBot 0.2 | Direct URL and resolver-backed URL playback | Implemented |
-| CueBot 0.3 | YouTube search with button-based selection | Implemented |
-| CueBot 0.4 | Branding, docs, demo flow, UX stability | In progress |
-| CueBot 0.5 | Spotify playlist metadata import | Implemented |
-| CueBot 1.0 | Polished embeds, button controls, persistence, attribution, and demo-ready reliability | Planned |
-| MediaForge | Desktop/CLI polish for local media preparation | Planned |
-
-Future ideas include playlist playback controls and expanded Spotify metadata display. Playback provider expansion should stay inside `media-core` or MediaForge-owned resolver/provider boundaries.
+- Config-driven local batch pipeline.
+- Deterministic stage ordering: `probe`, `transcode`, then `metadata`.
+- Dry-run mode that validates inputs and prints the planned commands.
+- Stable output path generation with configurable output names and formats.
+- FFprobe and FFmpeg command construction isolated from the CLI entry point.
+- Meaningful Node test suite for parsing, planning, dry-run behavior, and failure handling.
+- Reusable `media-core` package for media preparation services used by CueBot.
+- Local storage folders for temporary, output, and metadata artifacts.
 
 ## Tech Stack
 
 - TypeScript
 - Node.js 22+
 - pnpm workspaces
-- discord.js
-- @discordjs/voice
-- FFmpeg and FFprobe
-- yt-dlp
-- JSON metadata for MVP local storage
-- Windows-first local development
+- Node's built-in test runner
+- FFmpeg and FFprobe command planning
+- `discord.js` and `@discordjs/voice` for the companion CueBot app
 
-## Docs
+## How The Pipeline Works
 
-- [Branding](docs/branding.md)
+1. Read a JSON config file.
+2. Validate `outputDir`, `targetFormat`, and asset entries.
+3. Resolve local input files from `inputDir`.
+4. Normalize requested stages into the supported execution order.
+5. Generate output and metadata paths.
+6. Build per-stage command plans.
+7. In dry-run mode, print the plan without running media tools.
+8. In execution mode, run stages through an injected command runner and surface failures with stage context.
+
+Supported stages:
+
+| Stage | Purpose |
+|---|---|
+| `probe` | Inspect source media with FFprobe. |
+| `transcode` | Build an FFmpeg command for a playback-ready derivative. |
+| `metadata` | Prepare metadata output for handover and downstream tooling. |
+
+## Installation
+
+Requirements:
+
+- Node.js 22.12+
+- pnpm 9+
+- FFmpeg and FFprobe on `PATH` for real media processing
+
+Install dependencies and build:
+
+```bash
+pnpm install
+pnpm build
+```
+
+## Usage
+
+Create a local config file such as `mediaforge.config.json`:
+
+```json
+{
+  "inputDir": "sample-input",
+  "outputDir": "storage/mediaforge-output",
+  "targetFormat": "mp3",
+  "assets": [
+    {
+      "input": "demo-track.wav",
+      "outputName": "demo-track-ready",
+      "stages": ["metadata", "probe", "transcode"]
+    }
+  ]
+}
+```
+
+Add a small local media fixture at `sample-input/demo-track.wav`, then run a dry-run:
+
+```bash
+pnpm --filter @mediaforge/mediaforge-cli start -- --config mediaforge.config.json --dry-run
+```
+
+Example output:
+
+```text
+MediaForge dry-run plan: 1 job(s)
+- demo-track.wav -> /absolute/path/storage/mediaforge-output/demo-track-ready.mp3
+  probe: ffprobe -v error -show_format -show_streams /absolute/path/sample-input/demo-track.wav
+  transcode: ffmpeg -hide_banner -y -i /absolute/path/sample-input/demo-track.wav -vn /absolute/path/storage/mediaforge-output/demo-track-ready.mp3
+  metadata: node -e console.log(JSON.stringify(...))
+```
+
+Expected result: dry-run mode confirms the input exists, shows the normalized stage order, and prints the commands that would be used. It does not create media outputs or require large files.
+
+## How To Verify It Works
+
+1. `pnpm install && pnpm build` completes without errors.
+2. `pnpm test` reports all tests passing.
+3. The dry-run command above prints a plan with stages ordered `probe`, `transcode`, `metadata` and exits with code 0.
+4. Pointing `--config` at an invalid config (for example an unsupported stage name) prints a clear `MediaForge failed:` message and exits with code 1.
+
+## Testing
+
+Run the test suite:
+
+```bash
+pnpm test
+```
+
+The tests cover:
+
+- Pipeline stage ordering.
+- Config parsing and invalid config handling.
+- JSON config loading.
+- Output path generation.
+- FFprobe/FFmpeg command construction.
+- Dry-run behavior.
+- Missing input handling.
+- Stage failure handling.
+
+Additional verification:
+
+```bash
+pnpm typecheck
+```
+
+## CI
+
+GitHub Actions runs on `push` and `pull_request`.
+
+The workflow checks:
+
+- Dependency installation with `pnpm install --frozen-lockfile`.
+- TypeScript build with `pnpm build`.
+- Test suite with `pnpm test`.
+- Type checking with `pnpm typecheck`.
+
+The workflow uses no secrets, paid services, or external runtime services.
+
+## Project Structure
+
+```text
+apps/mediaforge-cli/      MediaForge CLI and pipeline planning logic
+apps/cuebot/              Companion Discord bot using media-core
+packages/media-core/      Reusable media ingestion, conversion, metadata, and provider services
+packages/shared/          Shared TypeScript contracts
+docs/                     Architecture, local setup, usage, and project notes
+scripts/                  Local validation and setup scripts
+storage/                  Ignored local temp/output/metadata folders with .gitkeep files
+```
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
 - [Command reference](docs/commands.md)
 - [Local environment guide](docs/local-env.md)
-- [Discord test server setup](docs/discord-test-server-setup.md)
-- [YouTube search design](docs/youtube-search-design.md)
-- [URL playback design](docs/url-playback-design.md)
-- [Production environment](docs/production-env.md)
-- [Mac mini home-server deployment](docs/deployment-home-server-mac.md)
+- [Legal and usage notes](docs/legal-and-usage.md)
 - [Version roadmap](docs/version-roadmap.md)
-- [Spotify playlist import](docs/spotify-playlist-import.md)
+
+## Limitations
+
+- MediaForge is local-first and intentionally not a hosted product.
+- Dry-run planning is the safest demo path; full processing requires FFmpeg and FFprobe installed locally.
+- The CLI focuses on batch planning and workflow shape, not polished interactive UX.
+- The project is not a downloader, piracy tool, streaming bypasser, production SaaS, or enterprise platform.
+- Docker is intentionally absent because there is no verified container workflow in this repository.
+
+## Roadmap
+
+- Add a concrete command runner for non-dry-run MediaForge execution.
+- Write metadata JSON files as a first-class pipeline artifact.
+- Add fixture-based media tests with tiny generated sample files.
+- Improve CLI argument validation and help output.
+- Consider Docker only if a verified container workflow genuinely improves local handoff.
+
+## Portfolio Signal
+
+MediaForge is ready to evaluate as a portfolio project because it has a launch-ready README, meaningful tests, CI, useful architecture docs, and a clear local demo path. Docker is intentionally absent and listed as a future option rather than claimed as an implemented capability.
+
+Expected PortfolioOps checklist:
+
+| Signal | Status |
+|---|---|
+| README | Present and launch-ready |
+| Tests | Present and meaningful |
+| CI | Present and expected to pass |
+| Docs | Present and useful |
+| Docker | Intentionally absent |
