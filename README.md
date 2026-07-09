@@ -1,4 +1,10 @@
-# MediaForge
+<div align="center">
+  <img src="./assets/mediaforge-banner.png" alt="MediaForge — qhedroid" width="100%" />
+</div>
+
+<br>
+
+<img src="https://img.shields.io/badge/noel--quadri-apps--tools-0F6E56?style=flat-square&labelColor=0B3D2E" alt="apps-tools" />
 
 MediaForge is a local-first batch media processing pipeline for repeatable media asset workflows.
 
@@ -205,3 +211,9 @@ Expected PortfolioOps checklist:
 | CI | Present and expected to pass |
 | Docs | Present and useful |
 | Docker | Intentionally absent |
+
+---
+
+<div align="center">
+  <sub>qhedroid · part of the <a href="https://www.linkedin.com/in/noelquadri2001">Noel Quadri</a> portfolio</sub>
+</div>
